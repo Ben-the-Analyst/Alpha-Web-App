@@ -16,7 +16,7 @@ def show_data_page():
         df = conn.read(worksheet="RoutePlanner")
 
         conn = st.connection("gsheets", type=GSheetsConnection)
-        df2 = conn.read(worksheet="Institutions")
+        # df2 = conn.read(worksheet="Institutions")
 
         st.dataframe(df)
         # st.dataframe(df2)
