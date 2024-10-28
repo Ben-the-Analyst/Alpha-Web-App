@@ -4,7 +4,7 @@ from streamlit_gsheets import GSheetsConnection
 
 
 def show_data_page():
-    # Main panel for displaying the table, summary, and plots
+    # tab pages for displaying the data
     tab = st.tabs(["Route Plans", "Daily Data", "HCP Data"])
 
     with tab[0]:

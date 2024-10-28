@@ -2,9 +2,12 @@
 base="light"
 primaryColor="#8e00c6"
 backgroundColor="#FFFFFF"
-secondaryBackgroundColor="#66dca4"
+secondaryBackgroundColor="#f0daf2"
 textColor="#000000"
 font="sans serif"
 
 [ui]
 hideTopBar = true
+
+[server]
+runOnSave = true

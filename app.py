@@ -1,4 +1,5 @@
 import streamlit as st
+import base64
 from streamlit_option_menu import option_menu
 
 # Import the page functions
@@ -18,26 +19,56 @@ reduce_header_height_style = """
 """
 st.markdown(reduce_header_height_style, unsafe_allow_html=True)
 
+LOGO_IMAGE = "logo.png"
+
 # Custom CSS to style the app and navigation buttons
 st.markdown(
     """
     <style>
-        .header {
+        .container {
+            display: flex;
             border-top: 4px solid #8e00c6; 
-            padding: 20px 10px 10px 10px;
+            border-bottom: 1px solid #d8d8d8;
+            # padding: 20px 10px 10px 10px;
             margin-bottom: 20px; 
             margin-top: 20px;
-            background-color: #f1f1f1;
+            # background-color: #faf4fc; 
             border-top-left-radius: 10px; 
-            border-top-right-radius: 10px; 
+            border-top-right-radius: 10px;
+            text-align: center !important;  
+            justify-content: center !important;
+            align-items: center !important;
+        }
+        
+        .logo-text {
+            font-weight: 700 !important;
+            font-size: 30px !important;
+            color: #f9a01b !important;
+            padding-top: 10px !important;
+            line-height: 40px !important;
+        }
+        
+        .logo-img {
+            float: right;
+            margin-right: 10px;
+            width: 40px !important;
+            height: 40px !important;
         }
     </style>
     """,
     unsafe_allow_html=True,
 )
 
-# Title of the app
-st.markdown('<h1 class="header">Multi-Page Streamlit App</h1>', unsafe_allow_html=True)
+
+st.markdown(
+    f"""
+    <div class="container">
+        <img class="logo-img" src="data:image/png;base64,{base64.b64encode(open(LOGO_IMAGE, "rb").read()).decode()}">
+        <p class="logo-text">Alpha Plus</p>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
 
 
 # Create the horizontal menu
@@ -51,8 +82,22 @@ selected = option_menu(
     styles={
         "container": {"padding": "0!important", "background-color": "transparent"},
         "icon": {"color": "orange", "font-size": "25px"},
+        "nav-link-selected": {
+            "background-color": "transparent",
+            "color": "#8e00c6",
+            # "font-weight": "bold",
+            # "font-size": "20px",
+            "border-top": "2px solid #8e00c6",
+            "border-right": "2px solid #8e00c6",
+            "border-left": "2px solid #8e00c6",
+            "border-bottom": "2px solid #8e00c6",
+        },
+        "nav-link": {
+            "font-weight": "bold",
+        },
     },
 )
+
 
 # Display the selected page
 if selected == "Forms":
