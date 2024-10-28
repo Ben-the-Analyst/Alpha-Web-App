@@ -1,5 +1,3 @@
 streamlit
 streamlit-option-menu
-streamlit-gsheets
-pandas
-base64
+st-gsheets-connection
