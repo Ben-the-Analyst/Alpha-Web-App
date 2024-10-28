@@ -19,7 +19,7 @@ def show_data_page():
         df2 = conn.read(worksheet="Institutions")
 
         st.dataframe(df)
-        st.dataframe(df2)
+        # st.dataframe(df2)
 
     with tab[1]:
         st.subheader("Summary Statistics")
