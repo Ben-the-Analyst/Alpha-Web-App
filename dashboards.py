@@ -8,13 +8,6 @@ def show_dashboard_page():
     with tab[0]:
         #
         st.subheader("Route Planner Dashboard")
-        st.subheader("Filtered Product Data")
 
-    with tab[1]:
-        #
-        st.subheader("Daily Report Dashboard")
-        st.subheader("Summary Statistics")
-
-    with tab[2]:
-        #
+    with tab[1]:a\zzzzzzzzzzzzzzzzzzzaaaaaaaaaaa
         st.subheader("HCP Data Dashboard")

@@ -105,3 +105,6 @@ elif selected == "Data":
     show_data_page()
 elif selected == "Dashboards":
     show_dashboard_page()
+
+
+st.logout("logo.png")
