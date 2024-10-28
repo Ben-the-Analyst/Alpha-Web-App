@@ -70,6 +70,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+st.write("Route Planner Dashboard")
 
 # Create the horizontal menu
 selected = option_menu(
