@@ -107,4 +107,4 @@ elif selected == "Dashboards":
     show_dashboard_page()
 
 
-st.logout("logo.png")
+st.logo("logo.png")
