@@ -1,0 +1,40 @@
+.st-key-home_container {
+    display: flex;
+    border-top: 3px solid #8e00c6;
+    border-bottom: 1px solid #d8d8d8;
+    padding: 10px 10px 10px 10px;
+    margin-top: 30px;
+    background-color: #faf4fc;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    /* text-align: center !important;
+    justify-content: center !important;
+    align-items: center !important; */
+}
+
+.st-key-footer_container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.st-key-add_route_plan_button button,
+.st-key-route_filter_button button,
+.st-key-add_daily_form_button button,
+.st-key-filter_daily_form_button button,
+.st-key-filter_hcp_form_button button,
+.st-key-add_hcp_form_button button,
+.st-key-filter_hcp_form_button button,
+.st-key-refresh_route_planner button,
+.st-key-more_daily_form button,
+.st-key-more_hcp_form button {
+    border-radius: 100px;
+    min-width: 100px;
+}
+
+.st-key-refresh_route_planner button,
+.st-key-more_daily_form button,
+.st-key-more_hcp_form button {
+    border-color: #8e00c6;
+}
