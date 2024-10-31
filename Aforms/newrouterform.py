@@ -135,10 +135,10 @@ def route_planner():
                 )
                 conn.update(worksheet="RoutePlanner", data=existing_route_data)
 
-                # Update DataFrame with .add_rows() for dynamic append
-                updated_data_placeholder = st.empty()
-                data_display = updated_data_placeholder.dataframe(existing_route_data)
-                data_display.add_rows(route_data)
+                # # Update DataFrame with  for dynamic append
+                # updated_data_placeholder = st.empty()
+                # data_display = updated_data_placeholder.dataframe(existing_route_data)
+                # # data_display(route_data)
 
             # Display success and reset placeholders
             message_placeholder.success("Route Plan details successfully submitted!")
