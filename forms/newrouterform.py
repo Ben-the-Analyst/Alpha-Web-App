@@ -19,6 +19,40 @@ def current_time():
     return datetime.now().time()
 
 
+@st.cache_data(persist=True)
+def build_hierarchical_data(df):
+    # Build the hierarchical structure
+    cached_data = {}
+
+    for _, row in df.iterrows():
+        agent_name = row["Names"]
+        region = row["Regions"]
+        institution = row["Institutions"]
+
+        # Create nested dictionaries as needed
+        if agent_name not in cached_data:
+            cached_data[agent_name] = {}  # Start a new dictionary for the agent
+
+        if region not in cached_data[agent_name]:
+            cached_data[agent_name][region] = []  # Start a new list for the region
+
+        # Add institution to the agent's region
+        if institution not in cached_data[agent_name][region]:
+            cached_data[agent_name][region].append(institution)
+
+    # Sort the keys alphabetically for better organization
+    for agent in cached_data:
+        for region in cached_data[agent]:
+            cached_data[agent][region] = sorted(
+                cached_data[agent][region]
+            )  # Sort institutions
+
+    # Sort the outer keys (agents)
+    cached_data = {k: cached_data[k] for k in sorted(cached_data)}
+
+    return cached_data
+
+
 def new_route_planner():
     settings_list_data, existing_route_data = fetch_data()
 
@@ -48,7 +82,9 @@ def new_route_planner():
         "Saturday",
         "Sunday",
     ]
-    AGENTNAMES = sorted(settings_list_data["Names"].unique().tolist())
+    # AGENTNAMES = sorted(settings_list_data["Names"].unique().tolist())
+    # Build and cache the hierarchical data
+    cached_data = build_hierarchical_data(settings_list_data)
 
     # Form Inputs
     territories = st.selectbox(
@@ -58,31 +94,13 @@ def new_route_planner():
     week = st.selectbox("Week*", options=WEEKS, key="route_week_selectbox")
     day = st.selectbox("Day*", options=DAYS, key="route_day_selectbox")
     date = st.date_input(label="Route Plan Date")
-    selected_name = st.selectbox(
-        "Your Name*", options=AGENTNAMES, key="route_name_selectbox"
-    )
-
-    # Filter Regions and Institutions dynamically
-    filtered_regions = (
-        settings_list_data[settings_list_data["Names"] == selected_name]["Regions"]
-        .unique()
-        .tolist()
-    )
+    selected_name = st.selectbox("Select Name", options=cached_data.keys())
     selected_region = st.selectbox(
-        "Region*", options=filtered_regions, key="route_region_selectbox"
-    )
-    filtered_institutions = (
-        settings_list_data[
-            (settings_list_data["Names"] == selected_name)
-            & (settings_list_data["Regions"] == selected_region)
-        ]["Institutions"]
-        .unique()
-        .tolist()
+        "Select Region", options=cached_data[selected_name].keys()
     )
     selected_institutions = st.multiselect(
-        "Institutions / Stores",
-        options=filtered_institutions,
-        key="route_institutions_multiselect",
+        "Select Institutions / Stores",
+        options=cached_data[selected_name][selected_region],
     )
 
     # Submission and Progress Elements

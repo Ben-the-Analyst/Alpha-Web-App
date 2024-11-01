@@ -28,7 +28,7 @@ def route_planner():
     settings_list_data = conn.read(worksheet="Settings")
 
     # List of data imports from sheets
-    TERRITORIES = settings_list_data["Territories"].unique().tolist()
+    TERRITORIES1 = settings_list_data["Territories"].unique().tolist()
     MONTHS = [
         "January",
         "February",
@@ -54,13 +54,19 @@ def route_planner():
         "Sunday",
     ]
 
-    AGENTNAMES = settings_list_data["Names"].unique().tolist()
-    REGIONS = settings_list_data["Regions"].unique().tolist()
-    INSTITUTIONS = settings_list_data["Institutions"].unique().tolist()
+    # AGENTNAMES = settings_list_data["Names"].unique().tolist()
+    # REGIONS = settings_list_data["Regions"].unique().tolist()
+    # INSTITUTIONS = settings_list_data["Institutions"].unique().tolist()
+
+    AGENTNAMES = sorted(settings_list_data["Names"].unique().tolist())
+    REGIONS = sorted(settings_list_data["Regions"].unique().tolist())
+    INSTITUTIONS = sorted(settings_list_data["Institutions"].unique().tolist())
+
+    # Now AGENTNAMES, REGIONS, and INSTITUTIONS are sorted alphabetically.
 
     # Onboarding New Route Plan Form
     with st.form(key="route_planner", clear_on_submit=True):
-        territories = st.selectbox("Territory*", options=TERRITORIES, index=None)
+        territories = st.selectbox("Territory*", options=TERRITORIES1, index=None)
         month = st.selectbox("Month*", options=MONTHS, index=None)
         week = st.selectbox("Week*", options=WEEKS, index=None)
         day = st.selectbox("Day*", options=DAYS, index=None)

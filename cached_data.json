@@ -1,0 +1,66 @@
+{
+    "Jane Smith": {
+        "Mombasa Road": [
+            "Alliance Hospital",
+            "Care Hospital",
+            "Glob Care Hospital",
+            "Hikmas",
+            "Mother and Child"
+        ],
+        "Eastleigh": [
+            "Awale 2",
+            "Dork Care",
+            "Elmart",
+            "Libkein Medical",
+            "Pharma Choice"
+        ]
+    },
+    "John Doe": {
+        "Parklands West": [
+            "Avenue Healthcare",
+            "Belea Pharmaceuticals",
+            "Crystal Rivers",
+            "Scion Hospital",
+            "Signature Mall"
+        ],
+        "Parklands East": [
+            "AMC",
+            "Bahrain Pharmacy",
+            "Green View Wholesalers",
+            "Hilwa General Stores",
+            "Southfield Mall"
+        ]
+    },
+    "Michael Green": {
+        "St. Teresa": [
+            "AAR Healthcare",
+            "Aga Khan",
+            "Avenue Healthcare",
+            "Jamaa Hospital",
+            "Metropolitan"
+        ],
+        "Westlands": [
+            "Nairobi West Medical Center",
+            "Parklands Baptist Hospital",
+            "Prestige Medical Centre",
+            "Sarit Centre",
+            "Westgate Mall"
+        ]
+    },
+    "Sarah Black": {
+        "Kilimani": [
+            "Good Samaritan Hospital",
+            "Oasis Medical Centre",
+            "Prestige Hospital",
+            "The Nairobi Hospital",
+            "Yaya Centre"
+        ],
+        "Lang'ata": [
+            "Kenyatta National Hospital",
+            "Lang'ata Hospital",
+            "Nyayo Market Pharmacy",
+            "Penda Health",
+            "QH Medical Centre"
+        ]
+    }
+}
