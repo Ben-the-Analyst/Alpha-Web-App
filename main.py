@@ -3,7 +3,6 @@ import time
 from streamlit_option_menu import option_menu
 
 
-
 # Import the page functions
 from Aforms.zAllforms import show_forms_page
 

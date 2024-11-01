@@ -4,7 +4,7 @@ primaryColor="#8e00c6"
 backgroundColor="#FFFFFF"
 secondaryBackgroundColor="#f0daf2"
 textColor="#000000"
-font="urbanist"
+font="sans serif"
 
 [ui]
 hideTopBar = true
