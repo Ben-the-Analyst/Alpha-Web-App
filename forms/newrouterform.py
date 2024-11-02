@@ -1,8 +1,15 @@
-import streamlit as st
-from streamlit_gsheets import GSheetsConnection
-import pandas as pd
-from datetime import datetime
 import time
+import pytz
+import pandas as pd
+import streamlit as st
+from datetime import datetime
+from streamlit_gsheets import GSheetsConnection
+
+
+# Function to get current time
+def current_time():
+    timezone = pytz.timezone("Africa/Nairobi")  # Setting timezone to East Africa
+    return datetime.now(timezone)
 
 
 # Cache the function to avoid reloading data on each action
@@ -13,10 +20,6 @@ def fetch_data():
     settings_list_data = conn.read(worksheet="Settings")
     existing_route_data = conn.read(worksheet="RoutePlanner")
     return settings_list_data, existing_route_data
-
-
-def current_time():
-    return datetime.now().time()
 
 
 @st.cache_data(persist=True)
@@ -82,35 +85,48 @@ def new_route_planner():
         "Saturday",
         "Sunday",
     ]
-    # AGENTNAMES = sorted(settings_list_data["Names"].unique().tolist())
+
     # Build and cache the hierarchical data
     cached_data = build_hierarchical_data(settings_list_data)
 
     # Form Inputs
-    territories = st.selectbox(
-        "The Territory*", options=TERRITORIES, key="route_territory_selectbox2"
+    territoriesx = st.selectbox(
+        label="Select Territory*",
+        options=TERRITORIES,
+        index=None,
+        key="Selectrouteterritory",
     )
-    month = st.selectbox("Month*", options=MONTHS, key="route_month_selectbox")
-    week = st.selectbox("Week*", options=WEEKS, key="route_week_selectbox")
-    day = st.selectbox("Day*", options=DAYS, key="route_day_selectbox")
-    date = st.date_input(label="Route Plan Date")
-    selected_name = st.selectbox("Select Name", options=cached_data.keys())
+    month = st.selectbox(
+        label="Month*", options=MONTHS, index=None, key="routemonthdropdown"
+    )
+    week = st.selectbox(label="Week*", options=WEEKS, index=None, key="routeweeknumber")
+    day = st.selectbox(label="Day*", options=DAYS, index=None, key="routedayofweek")
+    date = st.date_input(label="Select Route Plan Date")
+    selected_name = st.selectbox(
+        label="Select Name",
+        options=cached_data.keys(),
+        placeholder="select your name",
+        key="routenameselectedname",
+    )
     selected_region = st.selectbox(
-        "Select Region", options=cached_data[selected_name].keys()
+        label="Select Region",
+        options=cached_data[selected_name].keys(),
+        placeholder="select a region",
+        key="routeregionselectedregion",
     )
     selected_institutions = st.multiselect(
-        "Select Institutions / Stores",
+        label="Select Institutions / Stores",
         options=cached_data[selected_name][selected_region],
+        placeholder="select institutions",
+        key="routeinstitutionsselectedinstitutions",
     )
 
-    # Submission and Progress Elements
-    progress_placeholder = st.empty()  # Empty container for progress display
     message_placeholder = st.empty()  # Empty container for success or error messages
 
     # Submit Button with Progress Indicator
     if st.button("Submit Route Plan"):
         if not (
-            territories
+            territoriesx
             and month
             and week
             and day
@@ -123,17 +139,12 @@ def new_route_planner():
         else:
             # Show progress bar for feedback on submission
             with st.spinner("Submitting your details..."):
-                progress_bar = st.progress(0)
-                for i in range(1, 101):
-                    time.sleep(0.01)
-                    progress_bar.progress(i)
-
                 # Collecting and submitting data
                 submission_time = current_time()
                 route_data = pd.DataFrame(
                     [
                         {
-                            "Territory": territories,
+                            "Territory": territoriesx,
                             "Month": month,
                             "Week": week,
                             "Day": day,
@@ -141,7 +152,7 @@ def new_route_planner():
                             "Agent": selected_name,
                             "Region": selected_region,
                             "Institutions": ", ".join(selected_institutions),
-                            "Time": submission_time.strftime("%H:%M:%S"),
+                            "TimeStamp": submission_time.strftime("%d-%m-%Y  %H:%M:%S"),
                         }
                     ]
                 )
@@ -153,14 +164,22 @@ def new_route_planner():
                 )
                 conn.update(worksheet="RoutePlanner", data=existing_route_data)
 
-                # # Update DataFrame with  for dynamic append
-                # updated_data_placeholder = st.empty()
-                # data_display = updated_data_placeholder.dataframe(existing_route_data)
-                # # data_display(route_data)
-
             # Display success and reset placeholders
-            message_placeholder.success("Route Plan details successfully submitted!")
-            progress_placeholder.empty()  # Clear progress bar
+            message_placeholder.success(
+                "Route Plan details successfully submitted!", icon=":material/thumb_up:"
+            )
+            clear_fields()  # Call the function to reset fields
 
 
-new_route_planner()
+# Clear fields function
+def clear_fields():
+    st.session_state["Selectrouteterritory"] = ""
+    st.session_state["routemonthdropdown"] = ""
+    st.session_state["routeweeknumber"] = ""
+    st.session_state["routedayofweek"] = ""
+    st.session_state["routedateinput"] = None  # For date inputs, set to None
+    st.session_state["routenameselectedname"] = ""
+    st.session_state["routeregionselectedregion"] = ""
+    st.session_state["routeinstitutionsselectedinstitutions"] = (
+        []
+    )  # For multiselect, set to empty list

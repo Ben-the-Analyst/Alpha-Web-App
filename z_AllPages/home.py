@@ -1,7 +1,8 @@
 import os
 import streamlit as st
 from streamlit_gsheets import GSheetsConnection
-from forms.routeform import route_planner
+
+# from forms.routeform import route_planner
 from forms.newrouterform import new_route_planner
 from forms.dailyform import daily_form
 from forms.hcpform import hcp_form
@@ -36,7 +37,7 @@ def load_hcp_data():
 load_custom_css()
 
 # Create tabs for different forms
-tab = st.tabs(["Route Planner Form", "Daily Reporting Form", "HCP Form"])
+tab = st.tabs(["Route Planner", "Daily Reporting", "HCP"])
 
 # Route Planner Form Tab
 with tab[0]:
@@ -45,11 +46,6 @@ with tab[0]:
         col1, col2 = st.columns(2, gap="small")
 
         with col1:
-            with st.expander("Add New", expanded=False, icon=":material/ads_click:"):
-
-                new_route_planner()
-
-        with col2:
             # Expander for Action
             with st.expander(
                 "Action", expanded=False, icon=":material/ads_click:"
@@ -59,7 +55,7 @@ with tab[0]:
 
                     @st.dialog("Route Planner Form")
                     def show_route_form():
-                        route_planner()
+                        new_route_planner()
 
                     if st.button(
                         "Add",

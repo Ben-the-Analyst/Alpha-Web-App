@@ -3,6 +3,7 @@ from streamlit_gsheets import GSheetsConnection
 import pandas as pd
 from datetime import datetime
 import time
+import pytz
 
 
 def load_form_data():
@@ -11,7 +12,8 @@ def load_form_data():
 
 # Function to get current time
 def current_time():
-    return datetime.now().time()
+    timezone = pytz.timezone("Africa/Nairobi")  # Setting timezone to East Africa
+    return datetime.now(timezone)
 
 
 def route_planner():
