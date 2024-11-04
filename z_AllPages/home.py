@@ -1,4 +1,3 @@
-import os
 import streamlit as st
 from streamlit_gsheets import GSheetsConnection
 
@@ -53,33 +52,6 @@ tab = st.tabs(["Route Planner", "Daily Reporting", "HCP / Retailers"])
 # Route Planner Form Tab
 with tab[0]:
 
-    data = {
-        "Appointment / Follow-Up": "Scheduled future visits or calls with a contact to discuss the product or check on stock levels. OR required to for a follow-up.",
-        "Closed": "The institution/store/shop wasn’t open or permanently closed down.",
-        "Codes inactive": "Products were inactive or out of stock, No further action or stocking.",
-        "Commitment": "A commitment made by a contact (e.g., nurse, pharmacist) to order, recommend, or prescribe Alpha.",
-        "Complaint": "Feedback provided that raises issues or concerns about the product, stock, or service.",
-        "Confirm to Order": "Confirmation from the contact that they will place an order for the product.",
-        "Contact HQ": "Action item to reach out to headquarters for additional support or information.",
-        "Delivered": "The product was delivered to the facility and confirmed as received.",
-        "Introduction-Product Discussion": "Conversation introducing the product or discussing its benefits or use cases.",
-        "No Discussions": "No meaningful discussion or engagement took place during the visit./couldn’t reach the contact person.",
-        "Not Stocking": "The facility or pharmacy is not currently or in the near future planning to stock the product.",
-        "Ordered": "The facility placed an order for the product.",
-        "Other Supplier": "The contact is sourcing products from another supplier (e.g., Citylink, Veteran).",
-        "Promise": "The verbal promise from the contact to place an order or recommend or prescribe the product in the future.",
-        "Sample": "A request for or delivery of product samples to the contact or facility.",
-        "Stocked": "The facility already has the product in stock.",
-        "Unavailable": "The contact/decision-maker of the facility was not available during the visit.",
-    }
-    # Expander for Action
-    with st.expander("Outcomes Explanations", expanded=False, icon=":material/info:"):
-        # Streamlit app layout
-        st.title("Outcome Explanations")
-        st.write("Explore the various outcomes and their explanations below:")
-
-        for outcome, explanation in data.items():
-            st.markdown(f"- **{outcome}**: {explanation}")
     # Define button container
     with st.container(key="route_buttons_container"):
         col1, col2 = st.columns(2, gap="small")
@@ -154,6 +126,33 @@ with tab[0]:
 
 # Daily Reporting Form Tab
 with tab[1]:
+    data = {
+        "Appointment / Follow-Up": "Scheduled future visits or calls with a contact to discuss the product or check on stock levels. OR required to for a follow-up.",
+        "Closed": "The institution/store/shop wasn’t open or permanently closed down.",
+        "Codes inactive": "Products were inactive or out of stock, No further action or stocking.",
+        "Commitment": "A commitment made by a contact (e.g., nurse, pharmacist) to order, recommend, or prescribe Alpha.",
+        "Complaint": "Feedback provided that raises issues or concerns about the product, stock, or service.",
+        "Confirm to Order": "Confirmation from the contact that they will place an order for the product.",
+        "Contact HQ": "Action item to reach out to headquarters for additional support or information.",
+        "Delivered": "The product was delivered to the facility and confirmed as received.",
+        "Introduction-Product Discussion": "Conversation introducing the product or discussing its benefits or use cases.",
+        "No Discussions": "No meaningful discussion or engagement took place during the visit./couldn’t reach the contact person.",
+        "Not Stocking": "The facility or pharmacy is not currently or in the near future planning to stock the product.",
+        "Ordered": "The facility placed an order for the product.",
+        "Other Supplier": "The contact is sourcing products from another supplier (e.g., Citylink, Veteran).",
+        "Promise": "The verbal promise from the contact to place an order or recommend or prescribe the product in the future.",
+        "Sample": "A request for or delivery of product samples to the contact or facility.",
+        "Stocked": "The facility already has the product in stock.",
+        "Unavailable": "The contact/decision-maker of the facility was not available during the visit.",
+    }
+    # Expander for Action
+    with st.expander("Outcomes Explanations", expanded=False, icon=":material/info:"):
+        # Streamlit app layout
+        st.title("Outcome Explanations")
+        st.write("Explore the various outcomes and their explanations below:")
+
+        for outcome, explanation in data.items():
+            st.markdown(f"- **{outcome}**: {explanation}")
 
     with st.container(key="daily_buttons_container"):
         col1, col2 = st.columns(2, gap="small")

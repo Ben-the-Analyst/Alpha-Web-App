@@ -1,6 +1,7 @@
 import streamlit as st
 import streamlit_authenticator as stauth
 from streamlit_gsheets import GSheetsConnection
+import time
 
 # Set up the Streamlit page configuration
 st.set_page_config(
@@ -64,19 +65,26 @@ for index in range(len(usernames)):
 #     }
 # st.write(credentials)
 Authenticator = stauth.Authenticate(
-    credentials, cookie_name="Streamlit", key="AUTH_SECRET_KEY", cookie_expiry_days=1
+    credentials,
+    cookie_name="Streamlit",
+    key="AUTH_SECRET_KEY",
+    cookie_expiry_days=6,
+    preauthorized=emails,
 )
 # st.write(credentials)
 col1, col2, col3 = st.columns(3)
 with col2:
     try:
-        name_or_status = Authenticator.login(
-            fields={
-                "Form name": "Login to Alpa + ",
-                "Login": "Get Access",
-            },
-            location="main",
-        )
+        with st.spinner("Hold on! Running ..."):
+            name_or_status = Authenticator.login(
+                fields={
+                    "Form name": "Login to Alpa + ",
+                    "Login": "Get Access",
+                },
+                location="main",
+            )
+            if st.session_state.get("authentication_status"):
+                time.sleep(2)  # Short delay for smooth transition
     except Exception as e:
         st.error(e)
 
@@ -127,10 +135,10 @@ if st.session_state["authentication_status"]:
             f'Welcome Back <span style="color: {primary_color};"><strong>{user_credentials["fullname"]}</strong></span>',
             unsafe_allow_html=True,
         )
-        st.write(
-            f'Role: <span style="color: {primary_color};"><strong>{user_credentials["role"]}</strong></span>',
-            unsafe_allow_html=True,
-        )
+        # st.write(
+        #     f'Role: <span style="color: {primary_color};"><strong>{user_credentials["role"]}</strong></span>',
+        #     unsafe_allow_html=True,
+        # )
         # Use the user-specific Territory_ID from credentials
         st.write(
             f"Your Territory: <span style='color: {primary_color};'><strong>{user_credentials['Territory_ID']}</strong></span>",
@@ -142,7 +150,10 @@ if st.session_state["authentication_status"]:
         #     unsafe_allow_html=True,
         # )
 
-    Authenticator.logout("Logout", "sidebar")
+    if Authenticator.logout("Logout", "sidebar"):
+        with st.spinner("Logging out..."):
+            time.sleep(10)  # Short delay for smooth transition
+            st.rerun()  # Rerun the app to refresh the page
 
     st.sidebar.markdown("---")
     st.sidebar.markdown("© 2024   Alpha +")  # Copyright

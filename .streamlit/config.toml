@@ -12,6 +12,6 @@ hideTopBar = true
 [server]
 enableCORS = false
 enableXsrfProtection = false
-runOnSave = true
+runOnSave = false
 
 

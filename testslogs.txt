@@ -1,0 +1,333 @@
+22s
+Run streamlit/streamlit-app-action@v0.0.3
+Run python -m pip install --upgrade pip
+Requirement already satisfied: pip in /opt/hostedtoolcache/Python/3.11.10/x64/lib/python3.11/site-packages (24.2)
+Collecting pip
+  Downloading pip-24.3.1-py3-none-any.whl.metadata (3.7 kB)
+Downloading pip-24.3.1-py3-none-any.whl (1.8 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.8/1.8 MB 112.1 MB/s eta 0:00:00
+Installing collected packages: pip
+  Attempting uninstall: pip
+    Found existing installation: pip 24.2
+    Uninstalling pip-24.2:
+      Successfully uninstalled pip-24.2
+Successfully installed pip-24.3.1
+Collecting pytest
+  Downloading pytest-8.3.3-py3-none-any.whl.metadata (7.5 kB)
+Collecting iniconfig (from pytest)
+  Downloading iniconfig-2.0.0-py3-none-any.whl.metadata (2.6 kB)
+Collecting packaging (from pytest)
+  Downloading packaging-24.1-py3-none-any.whl.metadata (3.2 kB)
+Collecting pluggy<2,>=1.5 (from pytest)
+  Downloading pluggy-1.5.0-py3-none-any.whl.metadata (4.8 kB)
+Downloading pytest-8.3.3-py3-none-any.whl (342 kB)
+Downloading pluggy-1.5.0-py3-none-any.whl (20 kB)
+Downloading iniconfig-2.0.0-py3-none-any.whl (5.9 kB)
+Downloading packaging-24.1-py3-none-any.whl (53 kB)
+Installing collected packages: pluggy, packaging, iniconfig, pytest
+Successfully installed iniconfig-2.0.0 packaging-24.1 pluggy-1.5.0 pytest-8.3.3
+Collecting pandas==2.2.3 (from -r requirements.txt (line 1))
+  Downloading pandas-2.2.3-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (89 kB)
+Collecting pytz==2024.1 (from -r requirements.txt (line 2))
+  Downloading pytz-2024.1-py2.py3-none-any.whl.metadata (22 kB)
+Collecting Requests==2.32.3 (from -r requirements.txt (line 3))
+  Downloading requests-2.32.3-py3-none-any.whl.metadata (4.6 kB)
+Collecting st_gsheets_connection==0.1.0 (from -r requirements.txt (line 4))
+  Downloading st_gsheets_connection-0.1.0-py3-none-any.whl.metadata (7.0 kB)
+Collecting streamlit==1.39.0 (from -r requirements.txt (line 5))
+  Downloading streamlit-1.39.0-py2.py3-none-any.whl.metadata (8.5 kB)
+Collecting streamlit_authenticator==0.4.1 (from -r requirements.txt (line 6))
+  Downloading streamlit_authenticator-0.4.1-py3-none-any.whl.metadata (26 kB)
+Collecting numpy>=1.23.2 (from pandas==2.2.3->-r requirements.txt (line 1))
+  Downloading numpy-2.1.3-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (62 kB)
+Collecting python-dateutil>=2.8.2 (from pandas==2.2.3->-r requirements.txt (line 1))
+  Downloading python_dateutil-2.9.0.post0-py2.py3-none-any.whl.metadata (8.4 kB)
+Collecting tzdata>=2022.7 (from pandas==2.2.3->-r requirements.txt (line 1))
+  Downloading tzdata-2024.2-py2.py3-none-any.whl.metadata (1.4 kB)
+Collecting charset-normalizer<4,>=2 (from Requests==2.32.3->-r requirements.txt (line 3))
+  Downloading charset_normalizer-3.4.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (34 kB)
+Collecting idna<4,>=2.5 (from Requests==2.32.3->-r requirements.txt (line 3))
+  Downloading idna-3.10-py3-none-any.whl.metadata (10 kB)
+Collecting urllib3<3,>=1.21.1 (from Requests==2.32.3->-r requirements.txt (line 3))
+  Downloading urllib3-2.2.3-py3-none-any.whl.metadata (6.5 kB)
+Collecting certifi>=2017.4.17 (from Requests==2.32.3->-r requirements.txt (line 3))
+  Downloading certifi-2024.8.30-py3-none-any.whl.metadata (2.2 kB)
+Collecting gspread<6,>=5.8.0 (from st_gsheets_connection==0.1.0->-r requirements.txt (line 4))
+  Downloading gspread-5.12.4-py3-none-any.whl.metadata (8.8 kB)
+Collecting gspread-pandas>=3.2.2 (from st_gsheets_connection==0.1.0->-r requirements.txt (line 4))
+  Downloading gspread_pandas-3.3.0-py2.py3-none-any.whl.metadata (10 kB)
+Collecting gspread-dataframe>=3.3.0 (from st_gsheets_connection==0.1.0->-r requirements.txt (line 4))
+  Downloading gspread_dataframe-4.0.0-py2.py3-none-any.whl.metadata (4.5 kB)
+Collecting gspread-formatting>=1.1.2 (from st_gsheets_connection==0.1.0->-r requirements.txt (line 4))
+  Downloading gspread_formatting-1.2.0-py2.py3-none-any.whl.metadata (13 kB)
+Collecting duckdb>=0.8.1 (from st_gsheets_connection==0.1.0->-r requirements.txt (line 4))
+  Downloading duckdb-1.1.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (762 bytes)
+Collecting sql-metadata>=2.7.0 (from st_gsheets_connection==0.1.0->-r requirements.txt (line 4))
+  Downloading sql_metadata-2.14.0-py3-none-any.whl.metadata (9.8 kB)
+Collecting validators>=0.22.0 (from st_gsheets_connection==0.1.0->-r requirements.txt (line 4))
+  Downloading validators-0.34.0-py3-none-any.whl.metadata (3.8 kB)
+Collecting altair<6,>=4.0 (from streamlit==1.39.0->-r requirements.txt (line 5))
+  Downloading altair-5.4.1-py3-none-any.whl.metadata (9.4 kB)
+Collecting blinker<2,>=1.0.0 (from streamlit==1.39.0->-r requirements.txt (line 5))
+  Downloading blinker-1.8.2-py3-none-any.whl.metadata (1.6 kB)
+Collecting cachetools<6,>=4.0 (from streamlit==1.39.0->-r requirements.txt (line 5))
+  Downloading cachetools-5.5.0-py3-none-any.whl.metadata (5.3 kB)
+Collecting click<9,>=7.0 (from streamlit==1.39.0->-r requirements.txt (line 5))
+  Downloading click-8.1.7-py3-none-any.whl.metadata (3.0 kB)
+Requirement already satisfied: packaging<25,>=20 in /opt/hostedtoolcache/Python/3.11.10/x64/lib/python3.11/site-packages (from streamlit==1.39.0->-r requirements.txt (line 5)) (24.1)
+Collecting pillow<11,>=7.1.0 (from streamlit==1.39.0->-r requirements.txt (line 5))
+  Downloading pillow-10.4.0-cp311-cp311-manylinux_2_28_x86_64.whl.metadata (9.2 kB)
+Collecting protobuf<6,>=3.20 (from streamlit==1.39.0->-r requirements.txt (line 5))
+  Downloading protobuf-5.28.3-cp38-abi3-manylinux2014_x86_64.whl.metadata (592 bytes)
+Collecting pyarrow>=7.0 (from streamlit==1.39.0->-r requirements.txt (line 5))
+  Downloading pyarrow-18.0.0-cp311-cp311-manylinux_2_28_x86_64.whl.metadata (3.3 kB)
+Collecting rich<14,>=10.14.0 (from streamlit==1.39.0->-r requirements.txt (line 5))
+  Downloading rich-13.9.4-py3-none-any.whl.metadata (18 kB)
+Collecting tenacity<10,>=8.1.0 (from streamlit==1.39.0->-r requirements.txt (line 5))
+  Downloading tenacity-9.0.0-py3-none-any.whl.metadata (1.2 kB)
+Collecting toml<2,>=0.10.1 (from streamlit==1.39.0->-r requirements.txt (line 5))
+  Downloading toml-0.10.2-py2.py3-none-any.whl.metadata (7.1 kB)
+Collecting typing-extensions<5,>=4.3.0 (from streamlit==1.39.0->-r requirements.txt (line 5))
+  Downloading typing_extensions-4.12.2-py3-none-any.whl.metadata (3.0 kB)
+Collecting gitpython!=3.1.19,<4,>=3.0.7 (from streamlit==1.39.0->-r requirements.txt (line 5))
+  Downloading GitPython-3.1.43-py3-none-any.whl.metadata (13 kB)
+Collecting pydeck<1,>=0.8.0b4 (from streamlit==1.39.0->-r requirements.txt (line 5))
+  Downloading pydeck-0.9.1-py2.py3-none-any.whl.metadata (4.1 kB)
+Collecting tornado<7,>=6.0.3 (from streamlit==1.39.0->-r requirements.txt (line 5))
+  Downloading tornado-6.4.1-cp38-abi3-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (2.5 kB)
+Collecting watchdog<6,>=2.1.5 (from streamlit==1.39.0->-r requirements.txt (line 5))
+  Downloading watchdog-5.0.3-py3-none-manylinux2014_x86_64.whl.metadata (41 kB)
+Collecting bcrypt>=3.1.7 (from streamlit_authenticator==0.4.1->-r requirements.txt (line 6))
+  Downloading bcrypt-4.2.0-cp39-abi3-manylinux_2_28_x86_64.whl.metadata (9.6 kB)
+Collecting captcha>=0.5.0 (from streamlit_authenticator==0.4.1->-r requirements.txt (line 6))
+  Downloading captcha-0.6.0-py3-none-any.whl.metadata (2.1 kB)
+Collecting extra-streamlit-components>=0.1.70 (from streamlit_authenticator==0.4.1->-r requirements.txt (line 6))
+  Downloading extra_streamlit_components-0.1.71-py3-none-any.whl.metadata (5.4 kB)
+Collecting PyJWT>=2.3.0 (from streamlit_authenticator==0.4.1->-r requirements.txt (line 6))
+  Downloading PyJWT-2.9.0-py3-none-any.whl.metadata (3.0 kB)
+Collecting PyYAML>=5.3.1 (from streamlit_authenticator==0.4.1->-r requirements.txt (line 6))
+  Downloading PyYAML-6.0.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (2.1 kB)
+Collecting jinja2 (from altair<6,>=4.0->streamlit==1.39.0->-r requirements.txt (line 5))
+  Downloading jinja2-3.1.4-py3-none-any.whl.metadata (2.6 kB)
+Collecting jsonschema>=3.0 (from altair<6,>=4.0->streamlit==1.39.0->-r requirements.txt (line 5))
+  Downloading jsonschema-4.23.0-py3-none-any.whl.metadata (7.9 kB)
+Collecting narwhals>=1.5.2 (from altair<6,>=4.0->streamlit==1.39.0->-r requirements.txt (line 5))
+  Downloading narwhals-1.13.1-py3-none-any.whl.metadata (7.2 kB)
+Collecting gitdb<5,>=4.0.1 (from gitpython!=3.1.19,<4,>=3.0.7->streamlit==1.39.0->-r requirements.txt (line 5))
+  Downloading gitdb-4.0.11-py3-none-any.whl.metadata (1.2 kB)
+Collecting google-auth>=1.12.0 (from gspread<6,>=5.8.0->st_gsheets_connection==0.1.0->-r requirements.txt (line 4))
+  Downloading google_auth-2.35.0-py2.py3-none-any.whl.metadata (4.7 kB)
+Collecting google-auth-oauthlib>=0.4.1 (from gspread<6,>=5.8.0->st_gsheets_connection==0.1.0->-r requirements.txt (line 4))
+  Downloading google_auth_oauthlib-1.2.1-py2.py3-none-any.whl.metadata (2.7 kB)
+Collecting six>=1.12.0 (from gspread-dataframe>=3.3.0->st_gsheets_connection==0.1.0->-r requirements.txt (line 4))
+  Downloading six-1.16.0-py2.py3-none-any.whl.metadata (1.8 kB)
+Collecting decorator (from gspread-pandas>=3.2.2->st_gsheets_connection==0.1.0->-r requirements.txt (line 4))
+  Downloading decorator-5.1.1-py3-none-any.whl.metadata (4.0 kB)
+Collecting markdown-it-py>=2.2.0 (from rich<14,>=10.14.0->streamlit==1.39.0->-r requirements.txt (line 5))
+  Downloading markdown_it_py-3.0.0-py3-none-any.whl.metadata (6.9 kB)
+Collecting pygments<3.0.0,>=2.13.0 (from rich<14,>=10.14.0->streamlit==1.39.0->-r requirements.txt (line 5))
+  Downloading pygments-2.18.0-py3-none-any.whl.metadata (2.5 kB)
+Collecting sqlparse<0.6.0,>=0.4.1 (from sql-metadata>=2.7.0->st_gsheets_connection==0.1.0->-r requirements.txt (line 4))
+  Downloading sqlparse-0.5.1-py3-none-any.whl.metadata (3.9 kB)
+Collecting smmap<6,>=3.0.1 (from gitdb<5,>=4.0.1->gitpython!=3.1.19,<4,>=3.0.7->streamlit==1.39.0->-r requirements.txt (line 5))
+  Downloading smmap-5.0.1-py3-none-any.whl.metadata (4.3 kB)
+Collecting pyasn1-modules>=0.2.1 (from google-auth>=1.12.0->gspread<6,>=5.8.0->st_gsheets_connection==0.1.0->-r requirements.txt (line 4))
+  Downloading pyasn1_modules-0.4.1-py3-none-any.whl.metadata (3.5 kB)
+Collecting rsa<5,>=3.1.4 (from google-auth>=1.12.0->gspread<6,>=5.8.0->st_gsheets_connection==0.1.0->-r requirements.txt (line 4))
+  Downloading rsa-4.9-py3-none-any.whl.metadata (4.2 kB)
+Collecting requests-oauthlib>=0.7.0 (from google-auth-oauthlib>=0.4.1->gspread<6,>=5.8.0->st_gsheets_connection==0.1.0->-r requirements.txt (line 4))
+  Downloading requests_oauthlib-2.0.0-py2.py3-none-any.whl.metadata (11 kB)
+Collecting MarkupSafe>=2.0 (from jinja2->altair<6,>=4.0->streamlit==1.39.0->-r requirements.txt (line 5))
+  Downloading MarkupSafe-3.0.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (4.0 kB)
+Collecting attrs>=22.2.0 (from jsonschema>=3.0->altair<6,>=4.0->streamlit==1.39.0->-r requirements.txt (line 5))
+  Downloading attrs-24.2.0-py3-none-any.whl.metadata (11 kB)
+Collecting jsonschema-specifications>=2023.03.6 (from jsonschema>=3.0->altair<6,>=4.0->streamlit==1.39.0->-r requirements.txt (line 5))
+  Downloading jsonschema_specifications-2024.10.1-py3-none-any.whl.metadata (3.0 kB)
+Collecting referencing>=0.28.4 (from jsonschema>=3.0->altair<6,>=4.0->streamlit==1.39.0->-r requirements.txt (line 5))
+  Downloading referencing-0.35.1-py3-none-any.whl.metadata (2.8 kB)
+Collecting rpds-py>=0.7.1 (from jsonschema>=3.0->altair<6,>=4.0->streamlit==1.39.0->-r requirements.txt (line 5))
+  Downloading rpds_py-0.20.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (4.2 kB)
+Collecting mdurl~=0.1 (from markdown-it-py>=2.2.0->rich<14,>=10.14.0->streamlit==1.39.0->-r requirements.txt (line 5))
+  Downloading mdurl-0.1.2-py3-none-any.whl.metadata (1.6 kB)
+Collecting pyasn1<0.7.0,>=0.4.6 (from pyasn1-modules>=0.2.1->google-auth>=1.12.0->gspread<6,>=5.8.0->st_gsheets_connection==0.1.0->-r requirements.txt (line 4))
+  Downloading pyasn1-0.6.1-py3-none-any.whl.metadata (8.4 kB)
+Collecting oauthlib>=3.0.0 (from requests-oauthlib>=0.7.0->google-auth-oauthlib>=0.4.1->gspread<6,>=5.8.0->st_gsheets_connection==0.1.0->-r requirements.txt (line 4))
+  Downloading oauthlib-3.2.2-py3-none-any.whl.metadata (7.5 kB)
+Downloading pandas-2.2.3-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (13.1 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 13.1/13.1 MB 188.1 MB/s eta 0:00:00
+Downloading pytz-2024.1-py2.py3-none-any.whl (505 kB)
+Downloading requests-2.32.3-py3-none-any.whl (64 kB)
+Downloading st_gsheets_connection-0.1.0-py3-none-any.whl (8.8 kB)
+Downloading streamlit-1.39.0-py2.py3-none-any.whl (8.7 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 8.7/8.7 MB 155.4 MB/s eta 0:00:00
+Downloading streamlit_authenticator-0.4.1-py3-none-any.whl (34 kB)
+Downloading altair-5.4.1-py3-none-any.whl (658 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 658.1/658.1 kB 76.4 MB/s eta 0:00:00
+Downloading bcrypt-4.2.0-cp39-abi3-manylinux_2_28_x86_64.whl (273 kB)
+Downloading blinker-1.8.2-py3-none-any.whl (9.5 kB)
+Downloading cachetools-5.5.0-py3-none-any.whl (9.5 kB)
+Downloading captcha-0.6.0-py3-none-any.whl (102 kB)
+Downloading certifi-2024.8.30-py3-none-any.whl (167 kB)
+Downloading charset_normalizer-3.4.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (142 kB)
+Downloading click-8.1.7-py3-none-any.whl (97 kB)
+Downloading duckdb-1.1.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (20.1 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 20.1/20.1 MB 156.8 MB/s eta 0:00:00
+Downloading extra_streamlit_components-0.1.71-py3-none-any.whl (4.9 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.9/4.9 MB 160.7 MB/s eta 0:00:00
+Downloading GitPython-3.1.43-py3-none-any.whl (207 kB)
+Downloading gspread-5.12.4-py3-none-any.whl (49 kB)
+Downloading gspread_dataframe-4.0.0-py2.py3-none-any.whl (9.0 kB)
+Downloading gspread_formatting-1.2.0-py2.py3-none-any.whl (22 kB)
+Downloading gspread_pandas-3.3.0-py2.py3-none-any.whl (27 kB)
+Downloading idna-3.10-py3-none-any.whl (70 kB)
+Downloading numpy-2.1.3-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (16.3 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 16.3/16.3 MB 193.1 MB/s eta 0:00:00
+Downloading pillow-10.4.0-cp311-cp311-manylinux_2_28_x86_64.whl (4.5 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.5/4.5 MB 177.3 MB/s eta 0:00:00
+Downloading protobuf-5.28.3-cp38-abi3-manylinux2014_x86_64.whl (316 kB)
+Downloading pyarrow-18.0.0-cp311-cp311-manylinux_2_28_x86_64.whl (40.0 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 40.0/40.0 MB 197.7 MB/s eta 0:00:00
+Downloading pydeck-0.9.1-py2.py3-none-any.whl (6.9 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 6.9/6.9 MB 148.0 MB/s eta 0:00:00
+Downloading PyJWT-2.9.0-py3-none-any.whl (22 kB)
+Downloading python_dateutil-2.9.0.post0-py2.py3-none-any.whl (229 kB)
+Downloading PyYAML-6.0.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (762 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 763.0/763.0 kB 88.1 MB/s eta 0:00:00
+Downloading rich-13.9.4-py3-none-any.whl (242 kB)
+Downloading sql_metadata-2.14.0-py3-none-any.whl (22 kB)
+Downloading tenacity-9.0.0-py3-none-any.whl (28 kB)
+Downloading toml-0.10.2-py2.py3-none-any.whl (16 kB)
+Downloading tornado-6.4.1-cp38-abi3-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl (436 kB)
+Downloading typing_extensions-4.12.2-py3-none-any.whl (37 kB)
+Downloading tzdata-2024.2-py2.py3-none-any.whl (346 kB)
+Downloading urllib3-2.2.3-py3-none-any.whl (126 kB)
+Downloading validators-0.34.0-py3-none-any.whl (43 kB)
+Downloading watchdog-5.0.3-py3-none-manylinux2014_x86_64.whl (79 kB)
+Downloading gitdb-4.0.11-py3-none-any.whl (62 kB)
+Downloading google_auth-2.35.0-py2.py3-none-any.whl (208 kB)
+Downloading google_auth_oauthlib-1.2.1-py2.py3-none-any.whl (24 kB)
+Downloading jinja2-3.1.4-py3-none-any.whl (133 kB)
+Downloading jsonschema-4.23.0-py3-none-any.whl (88 kB)
+Downloading markdown_it_py-3.0.0-py3-none-any.whl (87 kB)
+Downloading narwhals-1.13.1-py3-none-any.whl (198 kB)
+Downloading pygments-2.18.0-py3-none-any.whl (1.2 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.2/1.2 MB 116.8 MB/s eta 0:00:00
+Downloading six-1.16.0-py2.py3-none-any.whl (11 kB)
+Downloading sqlparse-0.5.1-py3-none-any.whl (44 kB)
+Downloading decorator-5.1.1-py3-none-any.whl (9.1 kB)
+Downloading attrs-24.2.0-py3-none-any.whl (63 kB)
+Downloading jsonschema_specifications-2024.10.1-py3-none-any.whl (18 kB)
+Downloading MarkupSafe-3.0.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (23 kB)
+Downloading mdurl-0.1.2-py3-none-any.whl (10.0 kB)
+Downloading pyasn1_modules-0.4.1-py3-none-any.whl (181 kB)
+Downloading referencing-0.35.1-py3-none-any.whl (26 kB)
+Downloading requests_oauthlib-2.0.0-py2.py3-none-any.whl (24 kB)
+Downloading rpds_py-0.20.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (360 kB)
+Downloading rsa-4.9-py3-none-any.whl (34 kB)
+Downloading smmap-5.0.1-py3-none-any.whl (24 kB)
+Downloading oauthlib-3.2.2-py3-none-any.whl (151 kB)
+Downloading pyasn1-0.6.1-py3-none-any.whl (83 kB)
+Installing collected packages: pytz, watchdog, validators, urllib3, tzdata, typing-extensions, tornado, toml, tenacity, sqlparse, smmap, six, rpds-py, PyYAML, PyJWT, pygments, pyasn1, pyarrow, protobuf, pillow, oauthlib, numpy, narwhals, mdurl, MarkupSafe, idna, duckdb, decorator, click, charset-normalizer, certifi, cachetools, blinker, bcrypt, attrs, sql-metadata, rsa, Requests, referencing, python-dateutil, pyasn1-modules, markdown-it-py, jinja2, gitdb, captcha, rich, requests-oauthlib, pydeck, pandas, jsonschema-specifications, google-auth, gitpython, jsonschema, google-auth-oauthlib, gspread, altair, streamlit, gspread-pandas, gspread-formatting, gspread-dataframe, st_gsheets_connection, extra-streamlit-components, streamlit_authenticator
+Successfully installed MarkupSafe-3.0.2 PyJWT-2.9.0 PyYAML-6.0.2 Requests-2.32.3 altair-5.4.1 attrs-24.2.0 bcrypt-4.2.0 blinker-1.8.2 cachetools-5.5.0 captcha-0.6.0 certifi-2024.8.30 charset-normalizer-3.4.0 click-8.1.7 decorator-5.1.1 duckdb-1.1.2 extra-streamlit-components-0.1.71 gitdb-4.0.11 gitpython-3.1.43 google-auth-2.35.0 google-auth-oauthlib-1.2.1 gspread-5.12.4 gspread-dataframe-4.0.0 gspread-formatting-1.2.0 gspread-pandas-3.3.0 idna-3.10 jinja2-3.1.4 jsonschema-4.23.0 jsonschema-specifications-2024.10.1 markdown-it-py-3.0.0 mdurl-0.1.2 narwhals-1.13.1 numpy-2.1.3 oauthlib-3.2.2 pandas-2.2.3 pillow-10.4.0 protobuf-5.28.3 pyarrow-18.0.0 pyasn1-0.6.1 pyasn1-modules-0.4.1 pydeck-0.9.1 pygments-2.18.0 python-dateutil-2.9.0.post0 pytz-2024.1 referencing-0.35.1 requests-oauthlib-2.0.0 rich-13.9.4 rpds-py-0.20.1 rsa-4.9 six-1.16.0 smmap-5.0.1 sql-metadata-2.14.0 sqlparse-0.5.1 st_gsheets_connection-0.1.0 streamlit-1.39.0 streamlit_authenticator-0.4.1 tenacity-9.0.0 toml-0.10.2 tornado-6.4.1 typing-extensions-4.12.2 tzdata-2024.2 urllib3-2.2.3 validators-0.34.0 watchdog-5.0.3
+Run chartboost/ruff-action@v1
+Run if [ "$RUNNER_OS" == "Windows" ]; then
+creating virtual environment...
+installing ruff...
+filters/dailyfilters.py:16:5: F841 Local variable `start_of_week` is assigned to but never used
+   |
+14 |     # Calculate date ranges
+15 |     today = datetime.now()
+16 |     start_of_week = today - timedelta(days=today.weekday())  # Start of the current week
+   |     ^^^^^^^^^^^^^ F841
+17 |     start_of_month = today.replace(day=1)  # Start of the current month
+18 |     next_month = (start_of_month + timedelta(days=31)).replace(
+   |
+   = help: Remove assignment to unused variable `start_of_week`
+
+filters/dailyfilters.py:18:5: F841 Local variable `next_month` is assigned to but never used
+   |
+16 |     start_of_week = today - timedelta(days=today.weekday())  # Start of the current week
+17 |     start_of_month = today.replace(day=1)  # Start of the current month
+18 |     next_month = (start_of_month + timedelta(days=31)).replace(
+   |     ^^^^^^^^^^ F841
+19 |         day=1
+20 |     )  # Start of next month
+   |
+   = help: Remove assignment to unused variable `next_month`
+
+filters/dailyfilters.py:24:5: F841 Local variable `last_two_months` is assigned to but never used
+   |
+22 |         day=1
+23 |     )  # Start of last monthpip
+24 |     last_two_months = (last_month - timedelta(days=last_month.day)).replace(
+   |     ^^^^^^^^^^^^^^^ F841
+25 |         day=1
+26 |     )  # Start of two months ago
+   |
+   = help: Remove assignment to unused variable `last_two_months`
+
+forms/newrouterform.py:1:8: F401 [*] `time` imported but unused
+  |
+1 | import time
+  |        ^^^^ F401
+2 | import pytz
+3 | import pandas as pd
+  |
+  = help: Remove unused import: `time`
+
+z_AllPages/home.py:1:8: F401 [*] `os` imported but unused
+  |
+1 | import os
+  |        ^^ F401
+2 | import streamlit as st
+3 | from streamlit_gsheets import GSheetsConnection
+  |
+  = help: Remove unused import: `os`
+
+z_AllPages/sales_dashboard.py:1:8: F401 [*] `json` imported but unused
+  |
+1 | import json
+  |        ^^^^ F401
+2 | import streamlit as st
+3 | import pandas as pd
+  |
+  = help: Remove unused import: `json`
+
+z_AllPages/sales_dashboard.py:3:18: F401 [*] `pandas` imported but unused
+  |
+1 | import json
+2 | import streamlit as st
+3 | import pandas as pd
+  |                  ^^ F401
+4 | import os
+5 | from pathlib import Path
+  |
+  = help: Remove unused import: `pandas`
+
+z_AllPages/sales_dashboard.py:4:8: F401 [*] `os` imported but unused
+  |
+2 | import streamlit as st
+3 | import pandas as pd
+4 | import os
+  |        ^^ F401
+5 | from pathlib import Path
+  |
+  = help: Remove unused import: `os`
+
+z_AllPages/sales_dashboard.py:5:21: F401 [*] `pathlib.Path` imported but unused
+  |
+3 | import pandas as pd
+4 | import os
+5 | from pathlib import Path
+  |                     ^^^^ F401
+6 | 
+7 | # Style to reduce header height
+  |
+  = help: Remove unused import: `pathlib.Path`
+
+Found 9 errors.
+[*] 6 fixable with the `--fix` option (3 hidden fixes can be enabled with the `--unsafe-fixes` option).
+Error: Process completed with exit code 1.
+0s
+Run pmeier/pytest-results-action@v0.6.0
+Error: No JUnit XML file was found. Set `fail-on-empty: false` if that is a valid use case
