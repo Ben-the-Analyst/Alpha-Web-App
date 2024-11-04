@@ -43,10 +43,19 @@ def build_hierarchical_data(df):
         if institution not in cached_data[agent_name][region]:
             cached_data[agent_name][region].append(institution)
 
-    # Sort the keys alphabetically
+    # # Sort the keys alphabetically
+    # for agent in cached_data:
+    #     for region in cached_data[agent]:
+    #         cached_data[agent][region] = sorted(cached_data[agent][region])
+
+    # Inside build_hierarchical_data function
     for agent in cached_data:
         for region in cached_data[agent]:
-            cached_data[agent][region] = sorted(cached_data[agent][region])
+            # Convert all values to strings before sorting
+            cached_data[agent][region] = sorted(
+                str(x) for x in cached_data[agent][region]
+            )
+
     # Sort the outer keys (agents)
     cached_data = {k: cached_data[k] for k in sorted(cached_data)}
 
@@ -119,16 +128,28 @@ def new_route_planner():
     )
     selected_region = st.selectbox(
         label="Select Region",
-        options=cached_data[selected_name].keys(),
+        options=sorted(cached_data[selected_name].keys()),
         placeholder="select a region",
         key="routeregionselectedregion",
     )
     selected_institutions = st.multiselect(
         label="Select Institutions / Stores",
-        options=cached_data[selected_name][selected_region],
+        options=sorted(cached_data[selected_name][selected_region]),
         placeholder="select institutions",
         key="routeinstitutionsselectedinstitutions",
     )
+    # selected_region = st.selectbox(
+    #     label="Select Region",
+    #     options=cached_data[selected_name].keys(),
+    #     placeholder="select a region",
+    #     key="routeregionselectedregion",
+    # )
+    # selected_institutions = st.multiselect(
+    #     label="Select Institutions / Stores",
+    #     options=cached_data[selected_name][selected_region],
+    #     placeholder="select institutions",
+    #     key="routeinstitutionsselectedinstitutions",
+    # )
 
     message_placeholder = st.empty()  # Empty container for success or error messages
 
