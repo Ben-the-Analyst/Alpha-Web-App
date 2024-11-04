@@ -33,8 +33,29 @@
     min-width: 100px;
 }
 
-.st-key-refresh_route_planner button,
-.st-key-more_daily_form button,
-.st-key-more_hcp_form button {
-    border-color: #8e00c6;
+.st-key-my_territoryid_container,
+.st-key-my_territoryid_dashboard_container {
+    /* border-radius: 20px;
+    border-top: 1px solid #8e00c6;
+    border-top: 1px solid #8e00c6; */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: start;
+    /* padding-top: 10px; */
+    padding-bottom: 20px;
+    margin-bottom: 50px;
+    margin-top: 20px;
+}
+
+.st-key-login_header_container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.st-key-hcp_expander p {
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }

@@ -4,6 +4,7 @@ import pandas as pd
 from datetime import datetime
 import time
 import pytz
+import re
 
 
 def load_form_data():
@@ -16,6 +17,21 @@ def current_time():
     return datetime.now(timezone)
 
 
+def validate_input(input_value):
+    if input_value == "":
+        return False
+    else:
+        return True
+
+
+def validate_one_word_any_capital(input_str):
+    """
+    Validates that the input is a single word, allowing any combination of uppercase and lowercase letters.
+    """
+    pattern = r"^[A-Za-z]+$"
+    return bool(re.match(pattern, input_str))
+
+
 def daily_form():
     with st.spinner("Loading your form ..."):
         load_form_data()
@@ -26,18 +42,30 @@ def daily_form():
     conn = st.connection("gsheets", type=GSheetsConnection)
 
     # Fetch existing ner data
-    settings_list_data = conn.read(worksheet="Settings")
-
     existing_daily_data = conn.read(worksheet="DailyData")
+    institutions_list_data = conn.read(worksheet="Institutions")
+    cadre = conn.read(worksheet="Cadre")
+    institution_types = conn.read(worksheet="Type")
+    institutions_department = conn.read(worksheet="Department")
+    outcomes = conn.read(worksheet="Outcome")
 
     # List of data imports from sheets
-    # Sort each list alphabetically
-    TERRITORIES = settings_list_data["Territories"].unique().tolist()
-    AGENTNAMES = settings_list_data["Names"].unique().tolist()
-    PREFIXES = settings_list_data["Prefixes"].unique().tolist()
-    CADRE = settings_list_data["Cadre"].unique().tolist()
-    TYPE = settings_list_data["Type"].unique().tolist()
-    DEPARTMENT = settings_list_data["Department"].unique().tolist()
+    PREFIXES = ["Mr.", "Mrs.", "Ms.", "Dr.", "Prof."]
+    TERRITORIES = institutions_list_data["Territories"].unique().tolist()
+    AGENTNAMES = institutions_list_data["Names"].unique().tolist()
+    CADRE = cadre["Cadre"].unique().tolist()
+    TYPE = institution_types["Type"].unique().tolist()
+    DEPARTMENT = institutions_department["Department"].unique().tolist()
+    OUTCOMES = outcomes["Outcomes"].unique().tolist()
+
+    # sorted lists
+    PREFIXES = sorted(PREFIXES)
+    TERRITORIES = sorted(TERRITORIES)
+    AGENTNAMES = sorted(AGENTNAMES)
+    CADRE = sorted(CADRE)
+    TYPE = sorted(TYPE)
+    DEPARTMENT = sorted(DEPARTMENT)
+    OUTCOMES = sorted(OUTCOMES)
 
     # Onboarding New Daily Activity Form
     with st.form(key="daily_form", clear_on_submit=True):
@@ -69,6 +97,13 @@ def daily_form():
         )
         objective = st.text_input(label="Task Objective*", key="daily_objective")
         comments = st.text_area(label="Comments/Notes*", key="daily_comments")
+        outcomes = st.selectbox(
+            "Overall Outcome*",
+            options=OUTCOMES,
+            index=None,
+            key="daily_outcomes",
+            placeholder="Choose most relevant ",
+        )
         future_objective = st.text_area(
             label="Future Task Objective", key="daily_future_objective"
         )
@@ -105,6 +140,12 @@ def daily_form():
         # If the submit button is pressed
         if submit_button:
             # Check if all mandatory fields are filled
+            if not validate_one_word_any_capital(client_surname):
+                st.error("Client Surname must be a single word.")
+                st.stop()
+            if not validate_one_word_any_capital(client_firstname):
+                st.error("Client Firstname must be a single word.")
+                st.stop()
             if (
                 not territories
                 or not date
@@ -117,6 +158,7 @@ def daily_form():
                 or not department
                 or not objective
                 or not comments
+                or not outcomes
                 or not future_objective
                 or not appointment
             ):
@@ -133,11 +175,19 @@ def daily_form():
                     load_form_data()
                 # Get the current time at submission
                 submission_time = current_time()
+
+                # Capitalize the first letter of each field
+                client_surname = client_surname.capitalize()
+                client_firstname = client_firstname.capitalize()
+                objective = objective.capitalize()
+                comments = comments.capitalize()
+                future_objective = future_objective.capitalize()
+
                 # Create a new row of   data
                 daily_data = pd.DataFrame(
                     [
                         {
-                            "Name": territories,
+                            "Name": agentname,
                             "Territory": territories,
                             "Date": date.strftime("%d-%m-%Y"),
                             "Prefix": prefix,
@@ -148,6 +198,7 @@ def daily_form():
                             "Institution Department": department,
                             "Task Objective": objective,
                             "Comments/Notes": comments,
+                            "Outcome": outcomes,
                             "Future Task Objective": future_objective,
                             "Next Appointment": appointment.strftime("%d-%m-%Y"),
                             "TimeStamp": submission_time.strftime("%d-%m-%Y  %H:%M:%S"),

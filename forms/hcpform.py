@@ -3,17 +3,45 @@ from streamlit_gsheets import GSheetsConnection
 import pandas as pd
 from datetime import datetime
 import time
-import pytz  
+import pytz
+import re
 
 
 def load_form_data():
-    time.sleep(2)
+    time.sleep(3)
 
 
 # Function to get current time
 def current_time():
     timezone = pytz.timezone("Africa/Nairobi")  # Setting timezone to East Africa
     return datetime.now(timezone)
+
+
+def validate_one_word_any_capital(input_str):
+    """
+    Validates that the input is a single word, allowing any combination of uppercase and lowercase letters.
+    """
+    pattern = r"^[A-Za-z]+$"
+    return bool(re.match(pattern, input_str))
+
+
+def validate_positive_number(input_str):
+    """
+    Validates that the input is a positive number.
+    """
+    try:
+        number = float(input_str)
+        return number > 0
+    except ValueError:
+        return False
+
+
+def validate_whole_number_0_to_10(input_str):
+    """
+    Validates that the input is a whole number between 0 and 10 (inclusive).
+    """
+    pattern = r"^(?:[0-9]|10)$"
+    return bool(re.match(pattern, input_str))
 
 
 def hcp_form():
@@ -26,26 +54,42 @@ def hcp_form():
     conn = st.connection("gsheets", type=GSheetsConnection)
 
     # Fetch existing data
-    settings_list_data = conn.read(worksheet="Settings")
     existing_hcp_data = conn.read(worksheet="HCPData")
+    institutions_list_data = conn.read(worksheet="Institutions")
+    cadre = conn.read(worksheet="Cadre")
+    institution_types = conn.read(worksheet="Type")
+    institutions_department = conn.read(worksheet="Department")
+    cycle_goals = conn.read(worksheet="Cycle_Goals")
+    product_px_reco = conn.read(worksheet="Products")
 
     # List of data imports from sheets
-    TERRITORIES = settings_list_data["Territories"].unique().tolist()
-    AGENTNAMES = settings_list_data["Names"].unique().tolist()
-    PREFIXES = settings_list_data["Prefixes"].unique().tolist()
-    CADRE = settings_list_data["Cadre"].unique().tolist()
-    TYPE = settings_list_data["Type"].unique().tolist()
-    DEPARTMENT = settings_list_data["Department"].unique().tolist()
-    COLORCODES = settings_list_data["Colour_CODE"].unique().tolist()
-    GOALS = settings_list_data["Cycle_Goals"].unique().tolist()
-    PRODUCTS = settings_list_data["Products"].unique().tolist()
+    PREFIXES = ["Mr.", "Mrs.", "Ms.", "Dr.", "Prof."]
+    COLORCODES = ["RED", "BLUE", "GREEN", "YELLOW"]
+    TERRITORIES = institutions_list_data["Territories"].unique().tolist()
+    AGENTNAMES = institutions_list_data["Names"].unique().tolist()
+    CADRE = cadre["Cadre"].unique().tolist()
+    TYPE = institution_types["Type"].unique().tolist()
+    DEPARTMENT = institutions_department["Department"].unique().tolist()
+    GOALS = cycle_goals["Cycle_Goals"].unique().tolist()
+    PRODUCTS = product_px_reco["Products"].unique().tolist()
+
+    # Sorted lists
+    PREFIXES = sorted(PREFIXES)
+    COLORCODES = sorted(COLORCODES)
+    TERRITORIES = sorted(TERRITORIES)
+    AGENTNAMES = sorted(AGENTNAMES)
+    CADRE = sorted(CADRE)
+    TYPE = sorted(TYPE)
+    DEPARTMENT = sorted(DEPARTMENT)
+    GOALS = sorted(GOALS)
+    PRODUCTS = sorted(PRODUCTS)
 
     # Labels with HTML formatting for font size control
     adoption_ladder_label = """
         <p>Adoption Ladder</p>
         <ul style="font-size: 0.2em; color: gray;">
             <li><b>0-2</b>: RED</li>
-            <li><b>3-6</b>: GREEN</li>
+            <li><b>3-6</b>: BLUE</li>
             <li><b>7-8</b>: GREEN</li>
             <li><b>9-10</b>: YELLOW</li>
         </ul>
@@ -65,7 +109,16 @@ def hcp_form():
     For the next 3 Questions, input estimates as numbers.
     """
 
+    def validate_fields():
+        if not validate_one_word_any_capital(client_surname):
+            st.error("Client Surname must be a single word.")
+            st.stop()
+        if not validate_one_word_any_capital(client_firstname):
+            st.error("Client Firstname must be a single word.")
+            st.stop()
+
     # Onboarding New HCP Activity Form
+
     with st.form(key="hcp_form", clear_on_submit=True):
         agentname = st.selectbox(
             "Your Name*", options=AGENTNAMES, index=None, key="hcp_agentname"
@@ -98,8 +151,12 @@ def hcp_form():
             adoption_ladder_label,
             unsafe_allow_html=True,
         )
-        adoption_ladder = st.text_input(
-            label="Pick a number between 0 and 10*", key="hcp_adoption_ladder"
+        adoption_ladder = st.number_input(
+            label="Pick a number between 0 and 10*",
+            min_value=0,
+            max_value=10,
+            step=1,
+            key="hcp_adoption_ladder",
         )
         st.markdown(
             potentiality_label,
@@ -112,14 +169,26 @@ def hcp_form():
             key="hcp_potentiality",
         )
         st.markdown(section_label)
-        six_months_section = st.text_input(
-            label="0 - 6 Months*", key="hcp_six_months_section"
+        six_months_section = st.number_input(
+            label="0 - 6 Months*",
+            min_value=0,
+            max_value=10,
+            step=1,
+            key="hcp_six_months_section",
         )
-        one_year_section = st.text_input(
-            label="6 months - 1 Year*", key="hcp_one_year_section"
+        one_year_section = st.number_input(
+            label="6 months - 1 Year*",
+            min_value=0,
+            max_value=10,
+            step=1,
+            key="hcp_one_year_section",
         )
-        three_years_section = st.text_input(
-            label="1 - 3 Years*", key="hcp_three_years_section"
+        three_years_section = st.number_input(
+            label="1 - 3 Years*",
+            min_value=0,
+            max_value=10,
+            step=1,
+            key="hcp_three_years_section",
         )
         level_of_influence = st.selectbox(
             "Level of Influence*",
@@ -174,76 +243,86 @@ def hcp_form():
 
         # If the submit button is pressed
         if submit_button:
-            # Check if all mandatory fields are filled
-            if (
-                not agentname
-                or not territories
-                or not institution
-                or not pos_type
-                or not department
-                or not prefix
-                or not client_surname
-                or not client_firstname
-                or not cadre
-                or not colour_codes
-                or not adoption_ladder
-                or not potentiality
-                or not six_months_section
-                or not one_year_section
-                or not three_years_section
-                or not level_of_influence
-                or not cycle_goals
-                or not product_px_reco
-            ):
+            validate_fields()
+            # Required fields to ensure all are filled
+            required_fields = [
+                agentname,
+                territories,
+                institution,
+                pos_type,
+                department,
+                prefix,
+                client_surname,
+                client_firstname,
+                cadre,
+                colour_codes,
+                adoption_ladder,
+                potentiality,
+                six_months_section,
+                one_year_section,
+                three_years_section,
+                level_of_influence,
+                cycle_goals,
+                product_px_reco,
+            ]
+
+            # Check all required fields are filled
+            if any(not field for field in required_fields):
                 st.warning(
                     icon=":material/error:",
                     body="Ensure all fields are filled.",
                 )
                 st.stop()
-            # elif
             else:
-                # Show spinner while processing
-                with st.spinner("Submitting your details..."):
-                    # Simulate processing time
-                    load_form_data()
-                # Get the current time at submission
-                submission_time = current_time()
-                # Create a new row of HCP data
-                hcp_data = pd.DataFrame(
-                    [
-                        {
-                            "Name": agentname,
-                            "Territory": territories,
-                            "Institution Name": institution,
-                            "Institution (POS) Type": pos_type,
-                            "Institution Department": department,
-                            "Prefix": prefix,
-                            "HCP/Client Surname	": client_surname,
-                            "HCP/Client First Name": client_firstname,
-                            "Cadre": cadre,
-                            "Colour CODE": colour_codes,
-                            "Adoption Ladder": adoption_ladder,
-                            "Potentiality": potentiality,
-                            "0 - 6 Months": six_months_section,
-                            "6 months - 1 Year": one_year_section,
-                            "1 - 3 Years": three_years_section,
-                            "Level of Influence": level_of_influence,
-                            "Cycle Goals": cycle_goals,
-                            "Product Px/RECO": product_px_reco,
-                            "TimeStamp": submission_time.strftime("%d-%m-%Y  %H:%M:%S"),
-                        }
-                    ]
-                )
+                with st.spinner(
+                    "Submitting your details..."
+                ):  # Show spinner while processing
+                    # load_form_data() # # Simulate processing time
 
-                # Add the new HCP data to the existing data
-                updated_hcp_df = pd.concat(
-                    [existing_hcp_data, hcp_data], ignore_index=True
-                )
+                    submission_time = (
+                        current_time()
+                    )  # Get the current time at submission
+                    institution = institution.capitalize()
+                    client_surname = client_surname.capitalize()
+                    client_firstname = client_firstname.capitalize()
+                    # Create a new row of HCP data
+                    hcp_data = pd.DataFrame(
+                        [
+                            {
+                                "Name": agentname,
+                                "Territory": territories,
+                                "Institution Name": institution,
+                                "Institution (POS) Type": pos_type,
+                                "Institution Department": department,
+                                "Prefix": prefix,
+                                "HCP/Client Surname	": client_surname,
+                                "HCP/Client First Name": client_firstname,
+                                "Cadre": cadre,
+                                "Colour CODE": colour_codes,
+                                "Adoption Ladder": adoption_ladder,
+                                "Potentiality": potentiality,
+                                "0 - 6 Months": six_months_section,
+                                "6 months - 1 Year": one_year_section,
+                                "1 - 3 Years": three_years_section,
+                                "Level of Influence": level_of_influence,
+                                "Cycle Goals": cycle_goals,
+                                "Product Px/RECO": product_px_reco,
+                                "TimeStamp": submission_time.strftime(
+                                    "%d-%m-%Y  %H:%M:%S"
+                                ),
+                            }
+                        ]
+                    )
 
-                # Update Google Sheets with the new  data
-                conn.update(worksheet="HCPData", data=updated_hcp_df)
+                    # Add the new HCP data to the existing data
+                    updated_hcp_df = pd.concat(
+                        [existing_hcp_data, hcp_data], ignore_index=True
+                    )
 
-                st.success(
-                    icon=":material/thumb_up:",
-                    body="HCP details successfully submitted!",
-                )
+                    # Update Google Sheets with the new  data
+                    conn.update(worksheet="HCPData", data=updated_hcp_df)
+
+                    st.success(
+                        icon=":material/thumb_up:",
+                        body="HCP details successfully submitted!",
+                    )

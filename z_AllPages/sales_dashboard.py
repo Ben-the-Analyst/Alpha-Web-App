@@ -4,6 +4,17 @@ import pandas as pd
 import os
 from pathlib import Path
 
+# Style to reduce header height
+reduce_header_height_style = """
+    <style>
+        div.block-container {padding-top:1rem;}
+    </style>
+"""
+st.markdown(reduce_header_height_style, unsafe_allow_html=True)
+
+# --------TABS FOR DIFFERENT DASHBOARDS--------------------------
+
+
 # Create tabs for different forms
 tab = st.tabs(["Dashboard1", "Dashboard2", "Dashboard3"])
 
