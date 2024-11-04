@@ -13,3 +13,8 @@ hideTopBar = true
 enableCORS = false
 enableXsrfProtection = false
 runOnSave = true
+
+
+[client]
+showErrorDetails = false
+toolbarMode = "auto"
