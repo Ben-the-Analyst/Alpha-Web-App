@@ -48,7 +48,7 @@ load_custom_css()
 
 
 # --------TABS FOR DIFFERENT FORMS--------------------------
-tab = st.tabs(["Route Planner", "Daily Reporting", "HCP"])
+tab = st.tabs(["Route Planner", "Daily Reporting", "HCP / Retailers"])
 
 # Route Planner Form Tab
 with tab[0]:
