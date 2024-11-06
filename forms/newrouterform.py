@@ -23,42 +23,48 @@ def fetch_data():
 
 @st.cache_data(persist=True)
 def build_hierarchical_data(df):
-    # hierarchical structure
+    # Create separate hierarchical structures
     cached_data = {}
+    territory_data = {}  # New structure for territories
 
     for _, row in df.iterrows():
         agent_name = row["Names"]
+        territory = row["Territories"]
         region = row["Regions"]
         institution = row["Institutions"]
 
-        # --------nested dictionaries ---------------
+        # Build territory hierarchy
+        if agent_name not in territory_data:
+            territory_data[agent_name] = set()
+        territory_data[agent_name].add(territory)
+
+        # Build region and institution hierarchy
         if agent_name not in cached_data:
-            cached_data[agent_name] = {}  #  agent dictionary
+            cached_data[agent_name] = {}
 
         if region not in cached_data[agent_name]:
-            cached_data[agent_name][region] = []  # region list
+            cached_data[agent_name][region] = []
 
-        # Add institution to the agent's region
         if institution not in cached_data[agent_name][region]:
             cached_data[agent_name][region].append(institution)
 
-    # # Sort the keys alphabetically
-    # for agent in cached_data:
-    #     for region in cached_data[agent]:
-    #         cached_data[agent][region] = sorted(cached_data[agent][region])
-
-    # Inside build_hierarchical_data function
+    # Sort institutions within regions
     for agent in cached_data:
         for region in cached_data[agent]:
-            # Convert all values to strings before sorting
             cached_data[agent][region] = sorted(
                 str(x) for x in cached_data[agent][region]
             )
 
+    # Convert territory sets to sorted lists
+    territory_data = {
+        agent: sorted(territories) for agent, territories in territory_data.items()
+    }
+
     # Sort the outer keys (agents)
     cached_data = {k: cached_data[k] for k in sorted(cached_data)}
+    territory_data = {k: territory_data[k] for k in sorted(territory_data)}
 
-    return cached_data
+    return cached_data, territory_data
 
 
 # def clear_form():
@@ -76,7 +82,7 @@ def new_route_planner():
     institutions_list_data, existing_route_data = fetch_data()
 
     # Define static options
-    TERRITORIES = institutions_list_data["Territories"].unique().tolist()
+    # TERRITORIES = institutions_list_data["Territories"].unique().tolist()
     MONTHS = [
         "January",
         "February",
@@ -102,15 +108,17 @@ def new_route_planner():
     ]
 
     # Build and cache the hierarchical data
-    cached_data = build_hierarchical_data(institutions_list_data)
+    cached_data, territory_data = build_hierarchical_data(institutions_list_data)
+
+    # TERRITORIES = sorted(TERRITORIES)  # sort by territory alphabetic order
 
     # Form Inputs
-    territoriesx = st.selectbox(
-        label="Select Territory*",
-        options=TERRITORIES,
-        index=None,
-        key="Selectrouteterritory",
-    )
+    # territoriesx = st.selectbox(
+    #     label="Select Territory*",
+    #     options=TERRITORIES,
+    #     index=None,
+    #     key="Selectrouteterritory",
+    # )
     month = st.selectbox(
         label="Month*", options=MONTHS, index=None, key="routemonthdropdown"
     )
@@ -125,9 +133,14 @@ def new_route_planner():
         placeholder="select your name",
         key="routenameselectedname",
     )
+
+    # Remove the territory selectbox and get the territory directly from territory_data
+    # The first territory will be used since each agent should only have one territory
+    selected_territory = territory_data[selected_name][0] if selected_name else None
+
     selected_region = st.selectbox(
         label="Select Region",
-        options=sorted(cached_data[selected_name].keys()),
+        options=sorted(cached_data[selected_name].keys()) if selected_name else [],
         placeholder="select a region",
         key="routeregionselectedregion",
     )
@@ -137,46 +150,42 @@ def new_route_planner():
         placeholder="select institutions",
         key="routeinstitutionsselectedinstitutions",
     )
-    # selected_region = st.selectbox(
-    #     label="Select Region",
-    #     options=cached_data[selected_name].keys(),
-    #     placeholder="select a region",
-    #     key="routeregionselectedregion",
-    # )
-    # selected_institutions = st.multiselect(
-    #     label="Select Institutions / Stores",
-    #     options=cached_data[selected_name][selected_region],
-    #     placeholder="select institutions",
-    #     key="routeinstitutionsselectedinstitutions",
-    # )
 
     message_placeholder = st.empty()  # Empty container for success or error messages
+    spinner_placeholder = st.empty()  # New empty container for spinner
+    st.divider()
 
-    f3, f4 = st.columns(2)
-    with f3:
-
-        # Submit Button
-        if st.button("Submit Route Plan"):
-            if not (
-                territoriesx
-                and month
-                and week
-                and day
-                and date
-                and selected_name
-                and selected_region
-                and selected_institutions
-            ):
-                message_placeholder.warning("Ensure all mandatory fields are filled.")
-            else:
-                # Show spinner
+    # f3, f4 = st.columns(2)
+    # with f3:
+    # Submit Button
+    if st.button(
+        "Submit Route Plan",
+        key="routeplan_submit",
+        help="Submit the route plan",
+        type="primary",
+        icon=":material/send_money:",
+        use_container_width=True,
+    ):
+        if not (
+            month
+            and week
+            and day
+            and date
+            and selected_name
+            and selected_region
+            and selected_institutions
+        ):
+            message_placeholder.warning("Ensure all mandatory fields are filled.")
+        else:
+            # Show spinner in the new location
+            with spinner_placeholder:
                 with st.spinner("Submitting your details..."):
                     # Collecting and submitting data
                     submission_time = current_time()
                     route_data = pd.DataFrame(
                         [
                             {
-                                "Territory": territoriesx,
+                                "Territory": selected_territory,
                                 "Month": month,
                                 "Week": week,
                                 "Day": day,
@@ -198,11 +207,12 @@ def new_route_planner():
                     )
                     conn.update(worksheet="RoutePlanner", data=existing_route_data)
 
-                # Display success
-                message_placeholder.success(
-                    "Route Plan details successfully submitted!",
-                    icon=":material/thumb_up:",
-                )
+            # Display success
+            message_placeholder.success(
+                "Route Plan details successfully submitted!",
+                icon=":material/thumb_up:",
+            )
+    # st.divider()
 
     # with f4:
     #     if st.button(label="Clear", on_click=clear_form):

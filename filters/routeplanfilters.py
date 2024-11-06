@@ -1,57 +1,170 @@
-# import streamlit as st
-# import pandas as pd
-# import requests as rs
-# from streamlit_gsheets import GSheetsConnection
-
-# st.title("Amazing User Login App")
+# filter_modal.py
+from datetime import datetime, timedelta
+import streamlit as st
+import pandas as pd
 
 
-# conn = st.connection("gsheets", type=GSheetsConnection)
-# database = conn.read(worksheet="Users")
+# Function to define and display the modal with filters
+def filter_modal():
+    # Initialize filter settings if they don't exist
+    if "filter_settings" not in st.session_state:
+        st.session_state.filter_settings = {
+            "newest_first": True,
+            "oldest_first": False,
+            "current_week": True,
+            "current_month": False,
+            "next_month": False,
+            "last_month": False,
+            "last_two_months": False,
+        }
 
-# # Create user_state
-# if "user_state" not in st.session_state:
-#     st.session_state.user_state = {
-#         "FirstName": "",
-#         "Password": "",
-#         "logged_in": False,
-#         "Role": "",
-#         "Email": "",
-#         "Username": "",
-#     }
+    # Create a form for the filters
+    with st.form("filter_form"):
+        st.write("### Sort By")
 
-# if not st.session_state.user_state["logged_in"]:
-#     # Create login form
-#     st.write("Please login")
-#     Email = st.text_input("E-Mail")
-#     Password = st.text_input("Password", type="password")
-#     submit = st.button("Login")
+        # Sorting logic with mutual exclusivity
+        col1, col2 = st.columns(2, gap="small")
+        with col1:
+            newest_first = st.checkbox(
+                "Newest to oldest",
+                value=st.session_state.filter_settings["newest_first"],
+                key="temp_newest_first",
+            )
+        with col2:
+            oldest_first = st.checkbox(
+                "Oldest to newest",
+                value=st.session_state.filter_settings["oldest_first"],
+                key="temp_oldest_first",
+            )
 
-#     # Check if user is logged in
-#     if submit:
-#         user_ = database[database["Email"] == Email].copy()
-#         if len(user_) == 0:
-#             st.error("User not found")
-#         else:
-#             if (
-#                 user_["Email"].values[0] == Email
-#                 and user_["Password"].values[0] == Password
-#             ):
-#                 st.session_state.user_state["Email"] = Email
-#                 st.session_state.user_state["Password"] = Password
-#                 st.session_state.user_state["logged_in"] = True
-#                 st.session_state.user_state["Role"] = user_["Role"].values[0]
-#                 st.session_state.user_state["Email"] = user_["Email"].values[0]
-#                 st.session_state.user_state["Username"] = user_["Username"].values[0]
-#                 st.write("You are logged in")
-#                 st.rerun()
-#             else:
-#                 st.write("Invalid username or Password")
-# elif st.session_state.user_state["logged_in"]:
-#     st.write("Welcome to the app")
-#     st.write("You are logged in as:", st.session_state.user_state["Email"])
-#     st.write("You are a:", st.session_state.user_state["Role"])
-#     st.write("Your fixed user message:", st.session_state.user_state["Username"])
-#     if st.session_state.user_state["Role"] == "admin":
-#         st.write("You have admin rights. Here is the database")
-#         st.table(database)
+        # Define 3 columns for Current, Upcoming, and Past filters
+        st.divider()
+        col1, col2, col3 = st.columns(3)
+
+        with col1:
+            st.write("### Current")
+            current_week = st.checkbox(
+                "Current Week",
+                value=st.session_state.filter_settings["current_week"],
+                key="temp_current_week",
+            )
+            current_month = st.checkbox(
+                "Current Month",
+                value=st.session_state.filter_settings["current_month"],
+                key="temp_current_month",
+            )
+
+        with col2:
+            st.write("### Upcoming")
+            next_month = st.checkbox(
+                "Next Month",
+                value=st.session_state.filter_settings["next_month"],
+                key="temp_next_month",
+            )
+
+        with col3:
+            st.write("### Past")
+            last_month = st.checkbox(
+                "Last Month",
+                value=st.session_state.filter_settings["last_month"],
+                key="temp_last_month",
+            )
+            last_two_months = st.checkbox(
+                "Last 2 Months",
+                value=st.session_state.filter_settings["last_two_months"],
+                key="temp_last_two_months",
+            )
+
+        st.divider()
+        col1, col2, col3 = st.columns(3)
+        with col2:
+            # Apply Filters button
+            submitted = st.form_submit_button("Apply Filters")
+
+        if submitted:
+            # Ensure mutual exclusivity for sorting after form submission
+            if newest_first and oldest_first:
+                oldest_first = False
+
+            # Update filter settings based on form values
+            st.session_state.filter_settings.update(
+                {
+                    "newest_first": newest_first,
+                    "oldest_first": oldest_first,
+                    "current_week": current_week,
+                    "current_month": current_month,
+                    "next_month": next_month,
+                    "last_month": last_month,
+                    "last_two_months": last_two_months,
+                }
+            )
+            st.success("Filters applied successfully!")
+            return st.session_state.filter_settings
+
+    return st.session_state.filter_settings
+
+
+# Get the filtered data based on selected filters
+def get_filtered_data(data, filters):
+    """Filter data based on selected filters"""
+    filtered_data = data.copy()
+
+    # Get current date and time
+    today = pd.Timestamp.now()
+
+    # Calculate relevant dates
+    current_week_start = today - pd.Timedelta(days=today.dayofweek)
+    current_week_end = current_week_start + pd.Timedelta(days=6)
+
+    current_month_start = today.replace(day=1)
+    current_month_end = (current_month_start + pd.Timedelta(days=32)).replace(
+        day=1
+    ) - pd.Timedelta(days=1)
+
+    next_month_start = (current_month_start + pd.Timedelta(days=32)).replace(day=1)
+    next_month_end = (next_month_start + pd.Timedelta(days=32)).replace(
+        day=1
+    ) - pd.Timedelta(days=1)
+
+    last_month_start = (current_month_start - pd.Timedelta(days=1)).replace(day=1)
+    last_month_end = current_month_start - pd.Timedelta(days=1)
+
+    last_two_months_start = (last_month_start - pd.Timedelta(days=32)).replace(day=1)
+
+    # Convert the Date column to datetime if it isn't already
+    filtered_data["Date"] = pd.to_datetime(filtered_data["Date"])
+
+    # Apply date filters based on selection
+    if filters.get("current_week"):
+        filtered_data = filtered_data[
+            (filtered_data["Date"] >= current_week_start)
+            & (filtered_data["Date"] <= current_week_end)
+        ]
+    elif filters.get("current_month"):
+        filtered_data = filtered_data[
+            (filtered_data["Date"] >= current_month_start)
+            & (filtered_data["Date"] <= current_month_end)
+        ]
+    elif filters.get("next_month"):
+        filtered_data = filtered_data[
+            (filtered_data["Date"] >= next_month_start)
+            & (filtered_data["Date"] <= next_month_end)
+        ]
+    elif filters.get("last_month"):
+        filtered_data = filtered_data[
+            (filtered_data["Date"] >= last_month_start)
+            & (filtered_data["Date"] <= last_month_end)
+        ]
+    elif filters.get("last_two_months"):
+        filtered_data = filtered_data[
+            (filtered_data["Date"] >= last_two_months_start)
+            & (filtered_data["Date"] <= last_month_end)
+        ]
+
+    # Apply sorting
+    if filters.get("newest_first"):
+        filtered_data = filtered_data.sort_values("Date", ascending=False)
+    elif filters.get("oldest_first"):
+        filtered_data = filtered_data.sort_values("Date", ascending=True)
+
+    return filtered_data

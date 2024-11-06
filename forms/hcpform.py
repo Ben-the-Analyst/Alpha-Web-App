@@ -8,7 +8,7 @@ import re
 
 
 def load_form_data():
-    time.sleep(3)
+    time.sleep(4)
 
 
 # Function to get current time
@@ -111,10 +111,10 @@ def hcp_form():
 
     def validate_fields():
         if not validate_one_word_any_capital(client_surname):
-            st.error("Client Surname must be a single word.")
+            message_placeholder.error("Client Surname must be a single word.")
             st.stop()
         if not validate_one_word_any_capital(client_firstname):
-            st.error("Client Firstname must be a single word.")
+            message_placeholder.error("Client Firstname must be a single word.")
             st.stop()
 
     # Onboarding New HCP Activity Form
@@ -123,9 +123,12 @@ def hcp_form():
         agentname = st.selectbox(
             "Your Name*", options=AGENTNAMES, index=None, key="hcp_agentname"
         )
-        territories = st.selectbox(
-            "Territory*", options=TERRITORIES, index=None, key="hcp_territories"
-        )
+        if agentname:
+            territory = institutions_list_data[
+                institutions_list_data["Names"] == agentname
+            ]["Territories"].iloc[0]
+        else:
+            territory = None
         institution = st.text_input(label="Institution Name*", key="hcp_institution")
         pos_type = st.selectbox(
             "Institution (POS) Type*", options=TYPE, index=None, key="hcp_pos_type"
@@ -155,6 +158,7 @@ def hcp_form():
             label="Pick a number between 0 and 10*",
             min_value=0,
             max_value=10,
+            value=None,
             step=1,
             key="hcp_adoption_ladder",
         )
@@ -172,21 +176,21 @@ def hcp_form():
         six_months_section = st.number_input(
             label="0 - 6 Months*",
             min_value=0,
-            max_value=10,
+            value=None,
             step=1,
             key="hcp_six_months_section",
         )
         one_year_section = st.number_input(
             label="6 months - 1 Year*",
             min_value=0,
-            max_value=10,
+            value=None,
             step=1,
             key="hcp_one_year_section",
         )
         three_years_section = st.number_input(
             label="1 - 3 Years*",
             min_value=0,
-            max_value=10,
+            value=None,
             step=1,
             key="hcp_three_years_section",
         )
@@ -203,35 +207,16 @@ def hcp_form():
             "Product Px/RECO*", options=PRODUCTS, index=None, key="hcp_product_px_reco"
         )
 
-        # territories = st.selectbox("Territory*", options=TERRITORIES, index=None)
-        # institution = st.text_input(label="Institution Name*")
-        # pos_type = st.selectbox("Institution (POS) Type*", options=TYPE, index=None)
-        # department = st.selectbox(
-        #     "Institution Department*", options=DEPARTMENT, index=None
-        # )
-        # prefix = st.selectbox("prefix*", options=PREFIXES, index=None)
-        # client_surname = st.text_input(label="HCP/Client Surname*")
-        # client_firstname = st.text_input(label="HCP/Client Firstname*")
-        # cadre = st.selectbox("Cadre*", options=CADRE, index=None)
-        # colour_codes = st.selectbox("Colour CODE*", options=COLORCODES, index=None)
-        # st.markdown(adoption_ladder_label, unsafe_allow_html=True)
-        # adoption_ladder = st.text_input(label="Pick a number between 0 and 10*")
-        # st.markdown(potentiality_label, unsafe_allow_html=True)
-        # potentiality = st.selectbox(
-        #     "Choose *", options=["High", "Moderate", "Low"], index=None
-        # )
-        # st.markdown(section_label)
-        # six_months_section = st.text_input(label="0 - 6 Months*")
-        # one_year_section = st.text_input(label="6 months - 1 Year*")
-        # three_years_section = st.text_input(label="1 - 3 Years*")
-        # level_of_influence = st.selectbox(
-        #     "Level of Influence*", options=["High", "Moderate", "Low"], index=None
-        # )
-        # cycle_goals = st.selectbox("Cycle Goals*", options=GOALS, index=None)
-        # product_px_reco = st.selectbox("Product Px/RECO*", options=PRODUCTS, index=None)
-
         # Mark mandatory fields
         st.markdown("**required*")
+
+        message_placeholder = (
+            st.empty()
+        )  # Empty container for success or error messages
+        spinner_placeholder = st.empty()  # New empty container for spinner
+        st.divider()
+
+        # i need the spinner here
 
         submit_button = st.form_submit_button(
             label="Submit ",
@@ -247,7 +232,7 @@ def hcp_form():
             # Required fields to ensure all are filled
             required_fields = [
                 agentname,
-                territories,
+                territory,
                 institution,
                 pos_type,
                 department,
@@ -268,61 +253,62 @@ def hcp_form():
 
             # Check all required fields are filled
             if any(not field for field in required_fields):
-                st.warning(
+                message_placeholder.warning(
                     icon=":material/error:",
                     body="Ensure all fields are filled.",
                 )
                 st.stop()
             else:
-                with st.spinner(
-                    "Submitting your details..."
-                ):  # Show spinner while processing
-                    # load_form_data() # # Simulate processing time
+                with spinner_placeholder:
+                    with st.spinner(
+                        "Submitting your details..."
+                    ):  # Show spinner while processing
+                        # load_form_data() # # Simulate processing time
 
-                    submission_time = (
-                        current_time()
-                    )  # Get the current time at submission
-                    institution = institution.capitalize()
-                    client_surname = client_surname.capitalize()
-                    client_firstname = client_firstname.capitalize()
-                    # Create a new row of HCP data
-                    hcp_data = pd.DataFrame(
-                        [
-                            {
-                                "Name": agentname,
-                                "Territory": territories,
-                                "Institution Name": institution,
-                                "Institution (POS) Type": pos_type,
-                                "Institution Department": department,
-                                "Prefix": prefix,
-                                "HCP/Client Surname	": client_surname,
-                                "HCP/Client First Name": client_firstname,
-                                "Cadre": cadre,
-                                "Colour CODE": colour_codes,
-                                "Adoption Ladder": adoption_ladder,
-                                "Potentiality": potentiality,
-                                "0 - 6 Months": six_months_section,
-                                "6 months - 1 Year": one_year_section,
-                                "1 - 3 Years": three_years_section,
-                                "Level of Influence": level_of_influence,
-                                "Cycle Goals": cycle_goals,
-                                "Product Px/RECO": product_px_reco,
-                                "TimeStamp": submission_time.strftime(
-                                    "%d-%m-%Y  %H:%M:%S"
-                                ),
-                            }
-                        ]
-                    )
+                        submission_time = (
+                            current_time()
+                        )  # Get the current time at submission
+                        institution = institution.capitalize()
+                        client_surname = client_surname.capitalize()
+                        client_firstname = client_firstname.capitalize()
+                        # Create a new row of HCP data
+                        hcp_data = pd.DataFrame(
+                            [
+                                {
+                                    "Name": agentname,
+                                    "Territory": territory,
+                                    "Institution Name": institution,
+                                    "Institution (POS) Type": pos_type,
+                                    "Institution Department": department,
+                                    "Prefix": prefix,
+                                    "HCP/Client Surname	": client_surname,
+                                    "HCP/Client First Name": client_firstname,
+                                    "Cadre": cadre,
+                                    "Colour CODE": colour_codes,
+                                    "Adoption Ladder": adoption_ladder,
+                                    "Potentiality": potentiality,
+                                    "0 - 6 Months": six_months_section,
+                                    "6 months - 1 Year": one_year_section,
+                                    "1 - 3 Years": three_years_section,
+                                    "Level of Influence": level_of_influence,
+                                    "Cycle Goals": cycle_goals,
+                                    "Product Px/RECO": product_px_reco,
+                                    "TimeStamp": submission_time.strftime(
+                                        "%d-%m-%Y  %H:%M:%S"
+                                    ),
+                                }
+                            ]
+                        )
 
-                    # Add the new HCP data to the existing data
-                    updated_hcp_df = pd.concat(
-                        [existing_hcp_data, hcp_data], ignore_index=True
-                    )
+                        # Add the new HCP data to the existing data
+                        updated_hcp_df = pd.concat(
+                            [existing_hcp_data, hcp_data], ignore_index=True
+                        )
 
-                    # Update Google Sheets with the new  data
-                    conn.update(worksheet="HCPData", data=updated_hcp_df)
+                        # Update Google Sheets with the new  data
+                        conn.update(worksheet="HCPData", data=updated_hcp_df)
 
-                    st.success(
-                        icon=":material/thumb_up:",
-                        body="HCP details successfully submitted!",
-                    )
+                        message_placeholder.success(
+                            icon=":material/thumb_up:",
+                            body="HCP details successfully submitted!",
+                        )

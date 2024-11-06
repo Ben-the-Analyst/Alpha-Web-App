@@ -57,13 +57,6 @@ for index in range(len(usernames)):
         "Territory_ID": Territory_ID[index],
     }
 
-# credentials = {"usernames": {}}
-# for index in range(len(emails)):
-#     credentials["usernames"][usernames[index]] = {
-#         "name": emails[index],
-#         "password": passwords[index],
-#     }
-# st.write(credentials)
 Authenticator = stauth.Authenticate(
     credentials,
     cookie_name="Streamlit",
@@ -162,6 +155,9 @@ if st.session_state["authentication_status"]:
     # --- RUN NAVIGATION ---
     pg.run()
 
+    # After creating credentials
+    st.session_state["credentials"] = credentials
+    current_user_credentials = st.session_state["credentials"]
 
 elif st.session_state["authentication_status"] is False:
     st.error("Username/password is incorrect")
