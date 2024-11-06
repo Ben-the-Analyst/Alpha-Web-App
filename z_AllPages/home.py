@@ -1,7 +1,7 @@
 import streamlit as st
 from streamlit_gsheets import GSheetsConnection
 import pandas as pd
-import streamlit_app
+import userstateconfig
 
 # from forms.routeform import route_planner
 from forms.newrouterform import new_route_planner
@@ -48,7 +48,7 @@ def load_hcp_data():
 
 # Get user's territory from session state
 # Load the credentials from config.py
-credentials = streamlit_app.credentials
+credentials = userstateconfig.credentials
 st.session_state["credentials"] = credentials
 username = st.session_state["name"]
 user_credentials = st.session_state["credentials"]["usernames"][username]
@@ -119,46 +119,37 @@ with tab[0]:
     # Create empty container for dynamic table
     route_table_container = st.empty()
 
-    # Initialize filter settings if not already done
-    if "filter_settings" not in st.session_state:
-        st.session_state.filter_settings = {
-            "newest_first": True,
-            "oldest_first": False,
-            "current_week": True,
-            "current_month": False,
-            "next_month": False,
-            "last_month": False,
-            "last_two_months": False,
-        }
-
-    # Load and filter data
+    # Load data
     Route_data = load_route_data()
-    if not Route_data.empty:
-        # Only filter by territory if user is not admin
-        if user_territory != "admin":
-            Route_data = Route_data[Route_data["Territory"] == user_territory]
-            # For regular users, drop all four columns
-            display_data = Route_data.drop(
-                columns=["Territory", "Month", "Agent", "TimeStamp"]
-            )
-        else:
-            # For admin, only drop the Month column
-            display_data = Route_data.drop(columns=["Month"])
+    display_data = None
 
-        # Apply filters
-        display_data = get_filtered_data(display_data, st.session_state.filter_settings)
+    # Check if data exists and process it
+    if Route_data is not None and not Route_data.empty:
+        try:
+            # Filter by territory for non-admin users
+            if user_territory != "admin":
+                Route_data = Route_data[Route_data["Territory"] == user_territory]
+                if not Route_data.empty:
+                    display_data = Route_data.drop(
+                        columns=["Territory", "Month", "Agent", "TimeStamp"]
+                    )
+            else:
+                display_data = Route_data.drop(columns=["Month"])
+        except Exception as e:
+            st.error(f"Error processing data: {str(e)}")
+            display_data = None
 
-        # Display filtered data in the empty container
-        with route_table_container:
-            st.dataframe(display_data, hide_index=True)
-    else:
-        with route_table_container:
+    # Display data or show empty state
+    with route_table_container:
+        if display_data is None or display_data.empty:
             col1, col2, col3 = st.columns(3, gap="small")
             with col2:
                 st.image(
                     "assets/images/alert.png",
                     caption="No data available. Please add a route plan to the spreadsheet.",
                 )
+        else:
+            st.dataframe(display_data, hide_index=True)
 
 # Daily Reporting Form Tab
 with tab[1]:
@@ -234,18 +225,44 @@ with tab[1]:
                         st.cache_data.clear()  # Clear the cache
                         st.toast("Cache cleared. Reloading data...", icon="✅")
 
-    # Google Sheets connection and data display
-    # Use the function to get the data
+    # Create empty container for dynamic table
+    daily_table_container = st.empty()
+
+    # Load and filter data
     Daily_data = load_daily_data()
-    if Daily_data.empty:
-        col1, col2, col3 = st.columns(3, gap="small")
-        with col2:
-            st.image(
-                "assets/images/alert.png",
-                caption="No data available. Please add to view.",
+    display_daily_data = None
+
+    if not Daily_data.empty:
+        # Only filter by territory if user is not admin
+        if user_territory != "admin":
+            Daily_data = Daily_data[Daily_data["Territory"] == user_territory]
+            # For regular users, drop specified columns
+            display_daily_data = Daily_data.drop(
+                columns=[
+                    "TimeStamp",
+                    "Name",
+                    "Territory",
+                    "Institution (POS) Type",
+                    "Institution Department",
+                ]
             )
+        else:
+            # For admin, show all data
+            display_daily_data = Daily_data.copy()
+
+    # Check if either initial data was empty or filtered data is empty
+    if Daily_data.empty or display_daily_data.empty:
+        with daily_table_container:
+            col1, col2, col3 = st.columns(3, gap="small")
+            with col2:
+                st.image(
+                    "assets/images/alert.png",
+                    caption="No data available. Please add to view.",
+                )
     else:
-        st.dataframe(Daily_data, hide_index=True)
+        # Display filtered data in the empty container
+        with daily_table_container:
+            st.dataframe(display_daily_data, hide_index=True)
 
 # HCP Form Tab
 with tab[2]:
@@ -296,14 +313,37 @@ with tab[2]:
                         st.cache_data.clear()  # Clear the cache
                         st.toast("Cache cleared. Reloading data...", icon="✅")
 
-    # Google Sheets connection and data display
+    # Create empty container for dynamic table
+    hcp_table_container = st.empty()
+
+    # Load data
     HCP_data = load_hcp_data()
-    if HCP_data.empty:
-        col1, col2, col3 = st.columns(3, gap="small")
-        with col2:
-            st.image(
-                "assets/images/alert.png",
-                caption="No data available. Please add to view.",
-            )
-    else:
-        st.dataframe(HCP_data, hide_index=True)
+    display_hcp_data = None
+
+    # Check if data exists and process it
+    if HCP_data is not None and not HCP_data.empty:
+        try:
+            # Filter by territory for non-admin users
+            if user_territory != "admin":
+                HCP_data = HCP_data[HCP_data["Territory"] == user_territory]
+                if not HCP_data.empty:
+                    display_hcp_data = HCP_data.drop(
+                        columns=["TimeStamp", "Name", "Territory"]
+                    )
+            else:
+                display_hcp_data = HCP_data.copy()
+        except Exception as e:
+            st.error(f"Error processing data: {str(e)}")
+            display_hcp_data = None
+
+    # Display data or show empty state
+    with hcp_table_container:
+        if display_hcp_data is None or display_hcp_data.empty:
+            col1, col2, col3 = st.columns(3, gap="small")
+            with col2:
+                st.image(
+                    "assets/images/alert.png",
+                    caption="No data available. Please add to view.",
+                )
+        else:
+            st.dataframe(display_hcp_data, hide_index=True)
