@@ -1,7 +1,7 @@
 import streamlit as st
 from streamlit_gsheets import GSheetsConnection
 import pandas as pd
-import config
+import streamlit_app
 
 # from forms.routeform import route_planner
 from forms.newrouterform import new_route_planner
@@ -28,33 +28,31 @@ def load_custom_css():
 conn = st.connection("gsheets", type=GSheetsConnection)
 
 
-@st.cache_data(ttl=10)
+@st.cache_data(ttl=300)
 def load_route_data():
     data = conn.read(worksheet="RoutePlanner")
-    # Convert date strings to datetime objects
-    data["Date"] = pd.to_datetime(data["Date"], format="%d-%m-%Y")
+    # # Convert date strings to datetime objects
+    # data["Date"] = pd.to_datetime(data["Date"], format="%d-%m-%Y")
     return data
 
 
-@st.cache_data(ttl=10)
+@st.cache_data(ttl=300)
 def load_daily_data():
     return conn.read(worksheet="DailyData")
 
 
-@st.cache_data(ttl=10)
+@st.cache_data(ttl=300)
 def load_hcp_data():
     return conn.read(worksheet="HCPData")
 
 
 # Get user's territory from session state
 # Load the credentials from config.py
-credentials = config.credentials
+credentials = streamlit_app.credentials
 st.session_state["credentials"] = credentials
 username = st.session_state["name"]
 user_credentials = st.session_state["credentials"]["usernames"][username]
 user_territory = user_credentials["Territory_ID"]
-user_fullname = user_credentials["fullname"]
-# st.write(user_fullname)
 
 # Load the CSS at the beginning of the page
 load_custom_css()
@@ -135,8 +133,6 @@ with tab[0]:
 
     # Load and filter data
     Route_data = load_route_data()
-    display_data = None
-
     if not Route_data.empty:
         # Only filter by territory if user is not admin
         if user_territory != "admin":
@@ -152,8 +148,10 @@ with tab[0]:
         # Apply filters
         display_data = get_filtered_data(display_data, st.session_state.filter_settings)
 
-    # Check if either initial data was empty or filtered data is empty
-    if Route_data.empty or display_data.empty:
+        # Display filtered data in the empty container
+        with route_table_container:
+            st.dataframe(display_data, hide_index=True)
+    else:
         with route_table_container:
             col1, col2, col3 = st.columns(3, gap="small")
             with col2:
@@ -161,10 +159,6 @@ with tab[0]:
                     "assets/images/alert.png",
                     caption="No data available. Please add a route plan to the spreadsheet.",
                 )
-    else:
-        # Display filtered data in the empty container
-        with route_table_container:
-            st.dataframe(display_data, hide_index=True)
 
 # Daily Reporting Form Tab
 with tab[1]:
@@ -240,49 +234,18 @@ with tab[1]:
                         st.cache_data.clear()  # Clear the cache
                         st.toast("Cache cleared. Reloading data...", icon="✅")
 
-    # Create empty container for dynamic table
-    daily_table_container = st.empty()
-
-    # Load and filter data
+    # Google Sheets connection and data display
+    # Use the function to get the data
     Daily_data = load_daily_data()
-    display_daily_data = None
-
-    if not Daily_data.empty:
-        # Only filter by territory if user is not admin
-        if user_territory != "admin":
-            Daily_data = Daily_data[Daily_data["Name"] == user_fullname]
-            # For regular users, drop specified columns
-            display_daily_data = Daily_data.drop(
-                columns=[
-                    "TimeStamp",
-                    "Name",
-                    "Territory",
-                    "HCP Firstname",
-                    "Cadre",
-                    "Institution (POS) Type",
-                    "Institution Department",
-                ]
+    if Daily_data.empty:
+        col1, col2, col3 = st.columns(3, gap="small")
+        with col2:
+            st.image(
+                "assets/images/alert.png",
+                caption="No data available. Please add to view.",
             )
-        else:
-            # For admin, show all data
-            display_daily_data = Daily_data.copy()
-
-    # Check if either initial data was empty or filtered data is empty
-    if Daily_data.empty or display_daily_data.empty:
-        with daily_table_container:
-            col1, col2, col3 = st.columns(3, gap="small")
-            with col2:
-                st.image(
-                    "assets/images/alert.png",
-                    caption="No data available. Please add to view.",
-                )
     else:
-        # Display filtered data in the empty container
-        with daily_table_container:
-            st.dataframe(
-                display_daily_data,
-                hide_index=True,
-            )
+        st.dataframe(Daily_data, hide_index=True)
 
 # HCP Form Tab
 with tab[2]:
@@ -333,35 +296,14 @@ with tab[2]:
                         st.cache_data.clear()  # Clear the cache
                         st.toast("Cache cleared. Reloading data...", icon="✅")
 
-    # Create empty container for dynamic table
-    hcp_table_container = st.empty()
-
-    # Load and filter data
+    # Google Sheets connection and data display
     HCP_data = load_hcp_data()
-    display_hcp_data = None
-
-    if not HCP_data.empty:
-        # Only filter by territory if user is not admin
-        if user_territory != "admin":
-            HCP_data = HCP_data[HCP_data["Territory"] == user_territory]
-            # For regular users, drop specified columns
-            display_hcp_data = HCP_data.drop(
-                columns=["TimeStamp", "Name", "Territory", "Institution", "Department"]
+    if HCP_data.empty:
+        col1, col2, col3 = st.columns(3, gap="small")
+        with col2:
+            st.image(
+                "assets/images/alert.png",
+                caption="No data available. Please add to view.",
             )
-        else:
-            # For admin, show all data
-            display_hcp_data = HCP_data.copy()
-
-    # Check if either initial data was empty or filtered data is empty
-    if HCP_data.empty or display_hcp_data.empty:
-        with hcp_table_container:
-            col1, col2, col3 = st.columns(3, gap="small")
-            with col2:
-                st.image(
-                    "assets/images/alert.png",
-                    caption="No data available. Please add to view.",
-                )
     else:
-        # Display filtered data in the empty container
-        with hcp_table_container:
-            st.dataframe(display_hcp_data, hide_index=True)
+        st.dataframe(HCP_data, hide_index=True)
