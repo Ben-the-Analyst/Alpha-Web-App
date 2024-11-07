@@ -58,7 +58,8 @@ user_territory = user_credentials["Territory_ID"]
 load_custom_css()
 
 # --------TABS FOR DIFFERENT FORMS--------------------------
-tab = st.tabs(["Route Planner", "Daily Reporting", "HCP / Retailers"])
+# tab = st.tabs(["Route Planner", "Daily Reporting", "HCP / Retailers"])
+tab = st.tabs(["Route Planner", "Daily Reporting"])
 
 # Route Planner Form Tab
 with tab[0]:
@@ -131,7 +132,7 @@ with tab[0]:
                 Route_data = Route_data[Route_data["Territory"] == user_territory]
                 if not Route_data.empty:
                     display_data = Route_data.drop(
-                        columns=["Territory", "Month", "Agent", "TimeStamp"]
+                        columns=["Territory", "Agent", "TimeStamp"]
                     )
             else:
                 display_data = Route_data.drop(columns=["Month"])
@@ -243,7 +244,7 @@ with tab[1]:
                     "Name",
                     "Territory",
                     "Institution (POS) Type",
-                    "Institution Department",
+                    # "Institution Department",
                 ]
             )
         else:
@@ -264,86 +265,86 @@ with tab[1]:
         with daily_table_container:
             st.dataframe(display_daily_data, hide_index=True)
 
-# HCP Form Tab
-with tab[2]:
-    # st.markdown("### HCP Form")
-    # st.write("Please fill out the HCP Form below:")
+# # HCP Form Tab
+# with tab[2]:
+#     # st.markdown("### HCP Form")
+#     # st.write("Please fill out the HCP Form below:")
 
-    # establishing a Google Sheets connection
-    with st.container(key="hcp_buttons_container"):
-        col1, col2 = st.columns(2, gap="small")
+#     # establishing a Google Sheets connection
+#     with st.container(key="hcp_buttons_container"):
+#         col1, col2 = st.columns(2, gap="small")
 
-        with col1:
-            # Expander for Action
-            with st.expander("Action", expanded=False, icon=":material/ads_click:"):
-                col1, col2, col3 = st.columns(3, gap="small")
-                with col1:
+#         with col1:
+#             # Expander for Action
+#             with st.expander("Action", expanded=False, icon=":material/ads_click:"):
+#                 col1, col2, col3 = st.columns(3, gap="small")
+#                 with col1:
 
-                    @st.dialog("HCP Form")
-                    def show_hcp_form():
-                        hcp_form()
+#                     @st.dialog("HCP Form")
+#                     def show_hcp_form():
+#                         hcp_form()
 
-                    if st.button(
-                        "Add",
-                        help="Click to add HCP",
-                        type="primary",
-                        icon=":material/library_add:",
-                        key="add_hcp_form_button",
-                    ):
-                        show_hcp_form()
+#                     if st.button(
+#                         "Add",
+#                         help="Click to add HCP",
+#                         type="primary",
+#                         icon=":material/library_add:",
+#                         key="add_hcp_form_button",
+#                     ):
+#                         show_hcp_form()
 
-                with col2:
+#                 with col2:
 
-                    st.button(
-                        "Filters",
-                        help="Click to add filters",
-                        type="secondary",
-                        icon=":material/tune:",
-                        key="filter_hcp_form_button",
-                    )
-                with col3:
-                    # Refresh Button
-                    if st.button(
-                        "",
-                        help="Click to Refresh Data",
-                        type="secondary",
-                        icon=":material/refresh:",
-                        key="more_hcp_form",
-                    ):
-                        st.cache_data.clear()  # Clear the cache
-                        st.toast("Cache cleared. Reloading data...", icon="✅")
+#                     st.button(
+#                         "Filters",
+#                         help="Click to add filters",
+#                         type="secondary",
+#                         icon=":material/tune:",
+#                         key="filter_hcp_form_button",
+#                     )
+#                 with col3:
+#                     # Refresh Button
+#                     if st.button(
+#                         "",
+#                         help="Click to Refresh Data",
+#                         type="secondary",
+#                         icon=":material/refresh:",
+#                         key="more_hcp_form",
+#                     ):
+#                         st.cache_data.clear()  # Clear the cache
+#                         st.toast("Cache cleared. Reloading data...", icon="✅")
 
-    # Create empty container for dynamic table
-    hcp_table_container = st.empty()
+#     # Create empty container for dynamic table
+#     hcp_table_container = st.empty()
 
-    # Load data
-    HCP_data = load_hcp_data()
-    display_hcp_data = None
+#     # Load data
+#     HCP_data = load_hcp_data()
+#     display_hcp_data = None
 
-    # Check if data exists and process it
-    if HCP_data is not None and not HCP_data.empty:
-        try:
-            # Filter by territory for non-admin users
-            if user_territory != "admin":
-                HCP_data = HCP_data[HCP_data["Territory"] == user_territory]
-                if not HCP_data.empty:
-                    display_hcp_data = HCP_data.drop(
-                        columns=["TimeStamp", "Name", "Territory"]
-                    )
-            else:
-                display_hcp_data = HCP_data.copy()
-        except Exception as e:
-            st.error(f"Error processing data: {str(e)}")
-            display_hcp_data = None
+#     # Check if data exists and process it
+#     if HCP_data is not None and not HCP_data.empty:
+#         try:
+#             # Filter by territory for non-admin users
+#             if user_territory != "admin":
+#                 HCP_data = HCP_data[HCP_data["Territory"] == user_territory]
+#                 if not HCP_data.empty:
+#                     display_hcp_data = HCP_data.drop(
+#                         columns=["TimeStamp", "Name", "Territory"]
+#                     )
+#             else:
+#                 display_hcp_data = HCP_data.copy()
+#         except Exception as e:
+#             st.error(f"Error processing data: {str(e)}")
+#             display_hcp_data = None
 
-    # Display data or show empty state
-    with hcp_table_container:
-        if display_hcp_data is None or display_hcp_data.empty:
-            col1, col2, col3 = st.columns(3, gap="small")
-            with col2:
-                st.image(
-                    "assets/images/alert.png",
-                    caption="No data available. Please add to view.",
-                )
-        else:
-            st.dataframe(display_hcp_data, hide_index=True)
+#     # Display data or show empty state
+#     with hcp_table_container:
+#         if display_hcp_data is None or display_hcp_data.empty:
+#             col1, col2, col3 = st.columns(3, gap="small")
+#             with col2:
+#                 st.image(
+#                     "assets/images/alert.png",
+#                     caption="No data available. Please add to view.",
+#                 )
+#         else:
+#             st.dataframe(display_hcp_data, hide_index=True)

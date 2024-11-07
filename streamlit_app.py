@@ -81,7 +81,7 @@ with col2:
     except Exception as e:
         st.error(e)
 
-    info, info1 = st.columns(2)
+    # info, info1 = st.columns(2)
 
 if st.session_state["authentication_status"]:
 

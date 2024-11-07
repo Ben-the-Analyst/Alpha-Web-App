@@ -16,21 +16,6 @@ def current_time():
     return datetime.now(timezone)
 
 
-def validate_input(input_value):
-    if input_value == "":
-        return False
-    else:
-        return True
-
-
-def validate_one_word_any_capital(input_str):
-    """
-    Validates that the input is a single word, allowing any combination of uppercase and lowercase letters.
-    """
-    pattern = r"^[A-Za-z]+$"
-    return bool(re.match(pattern, input_str))
-
-
 def daily_form():
     with st.spinner("Loading your form ..."):
         load_form_data()
@@ -70,8 +55,8 @@ def daily_form():
             "Your Name*", options=AGENTNAMES, index=None, key="daily_agentname"
         )
 
-        if agentname:
-            st.info(f"Territory: {agent_territory_map[agentname]}")
+        # if agentname:
+        #     st.info(f"Territory: {agent_territory_map[agentname]}")
 
         date = st.date_input(label="Date", format="DD/MM/YYYY", key="daily_date")
 
@@ -88,6 +73,10 @@ def daily_form():
         )
 
         cadre = st.selectbox("Cadre*", options=CADRE, index=None, key="daily_cadre")
+
+        institution_name = st.text_input(
+            label="Institution Name*", key="daily_institution_name"
+        )
 
         pos_type = st.selectbox(
             "Institution (POS) Type*", options=TYPE, index=None, key="daily_pos_type"
@@ -135,13 +124,6 @@ def daily_form():
         )
 
         if submit_button:
-            if not validate_one_word_any_capital(client_surname):
-                message_placeholder.error("Client Surname must be a single word.")
-                st.stop()
-
-            if not validate_one_word_any_capital(client_firstname):
-                message_placeholder.error("Client Firstname must be a single word.")
-                st.stop()
 
             if (
                 not agentname
@@ -150,6 +132,7 @@ def daily_form():
                 or not client_surname
                 or not client_firstname
                 or not cadre
+                or not institution_name
                 or not pos_type
                 or not department
                 or not objective
@@ -172,6 +155,7 @@ def daily_form():
 
                 client_surname = client_surname.capitalize()
                 client_firstname = client_firstname.capitalize()
+                institution_name = institution_name.capitalize()
                 objective = objective.capitalize()
                 comments = comments.capitalize()
                 future_objective = future_objective.capitalize()
@@ -186,6 +170,7 @@ def daily_form():
                             "HCP Surname": client_surname,
                             "HCP Firstname": client_firstname,
                             "Cadre": cadre,
+                            "Institution": institution_name,
                             "Institution (POS) Type": pos_type,
                             "Institution Department": department,
                             "Task Objective": objective,

@@ -1,30 +1,60 @@
-name: Streamlit app
+name: Streamlit App
 
 on:
   push:
-    branches: ["main"]
+    branches: ['main']
   pull_request:
-    branches: ["main"]
+    branches: ['main']
 
 permissions:
-  contents: read
+  contents: read # Allow access to the repository contents
 
 jobs:
   streamlit:
     runs-on: ubuntu-latest
     steps:
+      # Step 1: Checkout the code
       - uses: actions/checkout@v4
+
+      # Step 2: Set up Python
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
-      - uses: streamlit/streamlit-app-action@v0.0.3
+          python-version: '3.11' # Update to Python 3.11 as specified
+
+      # Step 3: Install dependencies
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install streamlit pandas pytest
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      # Step 4: Run tests using pytest
+      - name: Run tests
+        run: |
+          pytest --junitxml=test-results.xml
+
+      # Step 5: Upload test results
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
         with:
-          app-path: streamlit_app.py
-          ruff: true
-          pytest-args: -v --junit-xml=test-results.xml
-      - if: always()
+          name: test-results
+          path: test-results.xml
+          retention-days: 30 # Retain the test results for 30 days
+
+      # Step 6: Deploy to Streamlit Community Cloud
+      - name: Deploy to Streamlit Cloud
+        uses: streamlit/streamlit-app-action@v0.0.3
+        with:
+          app-path: streamlit_app.py # Ensure this path is correct
+          ruff: true # Optional: Runs `ruff` for linting
+
+      # Step 7: Visualize the pytest results in GitHub Actions
+      - name: Show pytest results
+        if: always() # Run this step even if tests fail
         uses: pmeier/pytest-results-action@v0.6.0
         with:
-          path: test-results.xml
+          path: test-results.xml # Path to the generated test results
           summary: true
-          display-options: fEX
+          display-options: fEX # Display failed, errors, and skipped tests in GitHub Actions logs
+          fail-on-empty: false # Avoid failure if no test results are found
