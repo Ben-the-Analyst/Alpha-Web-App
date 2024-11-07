@@ -61,8 +61,7 @@ Authenticator = stauth.Authenticate(
     credentials,
     cookie_name="Streamlit",
     key="AUTH_SECRET_KEY",
-    cookie_expiry_days=6,
-    preauthorized=emails,
+    cookie_expiry_days=30,
 )
 # st.write(credentials)
 col1, col2, col3 = st.columns(3)
@@ -81,7 +80,7 @@ with col2:
     except Exception as e:
         st.error(e)
 
-    # info, info1 = st.columns(2)
+    info, info1 = st.columns(2)
 
 if st.session_state["authentication_status"]:
 
