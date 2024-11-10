@@ -1,36 +1,8 @@
-.st-key-home_container {
-    display: flex;
-    border-top: 3px solid #8e00c6;
-    border-bottom: 1px solid #d8d8d8;
-    padding: 10px 10px 10px 10px;
-    margin-top: 30px;
-    background-color: #faf4fc;
-    border-top-left-radius: 10px;
-    border-top-right-radius: 10px;
-    /* text-align: center !important;
-    justify-content: center !important;
-    align-items: center !important; */
-}
-
 .st-key-footer_container {
     display: flex;
     justify-content: center;
     align-items: center;
     flex-direction: column;
-}
-
-.st-key-add_route_plan_button button,
-.st-key-route_filter_button button,
-.st-key-add_daily_form_button button,
-.st-key-filter_daily_form_button button,
-.st-key-filter_hcp_form_button button,
-.st-key-add_hcp_form_button button,
-.st-key-filter_hcp_form_button button,
-.st-key-refresh_route_planner button,
-.st-key-more_daily_form button,
-.st-key-more_hcp_form button {
-    border-radius: 100px;
-    min-width: 100px;
 }
 
 .st-key-my_territoryid_container,
@@ -60,7 +32,37 @@
     align-items: center;
 }
 
-.st-key-routeplan_submit {
-    /* margin-top: 100px; */
-    margin-bottom: 30px;
+/* All Buttons */
+.st-key-add_route_plan_button button,
+.st-key-route_filter_button button,
+.st-key-add_daily_form_button button,
+.st-key-filter_daily_form_button button,
+.st-key-filter_hcp_form_button button,
+.st-key-add_hcp_form_button button,
+.st-key-filter_hcp_form_button button,
+.st-key-refresh_route_planner button,
+.st-key-refresh_daily_form button,
+.st-key-refresh_hcp_form button {
+    border-radius: 100px;
+    min-width: 100px;
+}
+
+/* Refresh Buttons */
+.st-key-refresh_daily_form button,
+.st-key-refresh_hcp_form button,
+.st-key-refresh_route_planner button,
+.st-key-outcomes_button button {
+    border-radius: 100px;
+    min-width: 100px;
+    border: none;
+}
+
+/* Clear Buttons & Submit Buttons */
+.st-key-clear_daily_form button,
+.st-key-clear_hcp_form button,
+.st-key-clear_route_planner_form button,
+.st-key-submit_daily_form button,
+.st-key-submit_hcp_form button,
+.st-key-submit_route_planner button {
+    border-radius: 100px;
 }

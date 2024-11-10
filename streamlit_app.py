@@ -1,9 +1,9 @@
+import time
 import streamlit as st
 import streamlit_authenticator as stauth
 from streamlit_gsheets import GSheetsConnection
-import time
 
-# Set up the Streamlit page configuration
+# --------------------SETUP THE STREAMLIT PAGE CONFIGURATION---------------------------------------------------------------
 st.set_page_config(
     page_title="AlphaPlus",
     page_icon=":material/home:",
@@ -11,7 +11,8 @@ st.set_page_config(
     layout="wide",
 )
 
-# # Style to reduce header height
+# --------------------REDUCE HEADER HEIGHT---------------------------------------------------------------
+
 # reduce_header_height_style = """
 #     <style>
 #         div.block-container {padding-top:1rem;}
@@ -20,54 +21,35 @@ st.set_page_config(
 # st.markdown(reduce_header_height_style, unsafe_allow_html=True)
 
 
-# Establish a connection to Google Sheets
+# --------------------LOAD USER DATA FROM GOOGLE SHEETS---------------------------------------------------------------
 conn = st.connection("gsheets", type=GSheetsConnection)
 users_df = conn.read(worksheet="Users")
-# Extract user information from the Google Sheets data
 users = users_df.to_dict("records")
-fullname = []
-emails = []
-usernames = []
-passwords = []
-role = []
-Territory_ID = []
 
-# Organize user details into separate lists
-for user in users:
-    fullname.append(user["name"])
-    emails.append(user["email"])
-    usernames.append(user["username"])
-    passwords.append(user["password"])
-    role.append(user["role"])
-    Territory_ID.append(user["Territory_ID"])
-# st.write(users)
-# st.write(emails)
-# st.write(usernames)
-# st.write(passwords)
-
-# Define the credentials dictionary in the format expected by streamlit_authenticator
 credentials = {"usernames": {}}
-for index in range(len(usernames)):
-    credentials["usernames"][usernames[index]] = {
-        "fullname": fullname[index],
-        "name": usernames[index],
-        "email": emails[index],
-        "password": passwords[index],
-        "role": role[index],
-        "Territory_ID": Territory_ID[index],
+for user in users:
+    credentials["usernames"][user["username"]] = {
+        "fullname": user["name"],
+        "name": user["username"],
+        "email": user["email"],
+        "password": user["password"],
+        "role": user["role"],
+        "Territory_ID": user["Territory_ID"],
     }
 
+# --------------------SETUP THE STREAMLIT AUTHENTICATOR---------------------------------------------------------------
 Authenticator = stauth.Authenticate(
     credentials,
-    cookie_name="Streamlit",
+    cookie_name="alphaplus",
     key="AUTH_SECRET_KEY",
     cookie_expiry_days=30,
 )
-# st.write(credentials)
-col1, col2, col3 = st.columns(3)
+
+# --------------------LOGIN FORM---------------------------------------------------------------
+col1, col2, col3 = st.columns([1, 2, 1])
 with col2:
     try:
-        with st.spinner("Hold on! Running ..."):
+        with st.spinner("    Fetching ..."):
             name_or_status = Authenticator.login(
                 fields={
                     "Form name": "Login to Alpa + ",
@@ -80,11 +62,19 @@ with col2:
     except Exception as e:
         st.error(e)
 
-    info, info1 = st.columns(2)
 
+# --------------------AUTHENTICATION CHECK---------------------------------------------------------------
 if st.session_state["authentication_status"]:
+    # Set all necessary authentication info in session state
+    st.session_state["credentials"] = credentials
+    st.session_state["authenticated"] = True
+    st.session_state["username"] = st.session_state["username"]
+    st.session_state["name"] = st.session_state["name"]
+    st.session_state["user_credentials"] = credentials["usernames"][
+        st.session_state["username"]
+    ]
 
-    # --- PAGE SETUP ---
+    # --- PAGE SETUP -------------------------------------------------------------------------------------------
     home_page = st.Page(
         "z_AllPages/home.py",
         title="Home",
@@ -97,15 +87,15 @@ if st.session_state["authentication_status"]:
         icon=":material/bar_chart:",
     )
     # project_2_page = st.Page(
-    #     "z_AllPages/chatbot.py",
+    #     "z_AllPages/page.py",
     #     title="Chat Bot",
     #     icon=":material/smart_toy:",
     # )
 
-    # --- NAVIGATION SETUP [WITHOUT SECTIONS] ---
+    # --- NAVIGATION SETUP [WITHOUT SECTIONS] ----------------------------------------------------------------------------
     pg = st.navigation(pages=[home_page, dashboard])
 
-    # --- NAVIGATION SETUP [WITH SECTIONS]---
+    # --- NAVIGATION SETUP [WITH SECTIONS]----------------------------------------------------------------------------
     # pg = st.navigation(
     #     {
     #         "Info": [home_page],
@@ -113,10 +103,10 @@ if st.session_state["authentication_status"]:
     #     }
     # )
 
-    # --- SHARED ON ALL z_AllPages ---
+    # --- SHARED ON ALL z_AllPages ---------------------------------------------------------------------------------
     st.logo("assets/images/logo.png", size="large")
 
-    # ---------HEADER----------------
+    # ---------SIDEBAR-------------------------------------------------------------------------------------
 
     with st.sidebar.container(key="my_territoryid_container"):
         primary_color = st.get_option("theme.primaryColor")
@@ -131,21 +121,31 @@ if st.session_state["authentication_status"]:
         #     f'Role: <span style="color: {primary_color};"><strong>{user_credentials["role"]}</strong></span>',
         #     unsafe_allow_html=True,
         # )
+        # st.write(
+        #     f'username: <span style="color: {primary_color};"><strong>{user_credentials["name"]}</strong></span>',
+        #     unsafe_allow_html=True,
+        # )
         # Use the user-specific Territory_ID from credentials
         st.write(
             f"Your Territory: <span style='color: {primary_color};'><strong>{user_credentials['Territory_ID']}</strong></span>",
             unsafe_allow_html=True,
         )
-        # st.write(f'Welcome Back **{st.session_state["name"]}**')
-        # st.write(
-        #     f'Welcome Back <span style="color: {primary_color};"><strong>{st.session_state["name"]}</strong></span>',
-        #     unsafe_allow_html=True,
-        # )
 
+    # --------------------LOGOUT BUTTON---------------------------------------------------------------
     if Authenticator.logout("Logout", "sidebar"):
         with st.spinner("Logging out..."):
-            time.sleep(10)  # Short delay for smooth transition
-            st.rerun()  # Rerun the app to refresh the page
+            # Clear all authentication-related session state
+            for key in [
+                "authenticated",
+                "username",
+                "name",
+                "credentials",
+                "user_credentials",
+                "authentication_status",
+            ]:
+                if key in st.session_state:
+                    del st.session_state[key]
+            st.write("You have logged out successfully.")
 
     st.sidebar.markdown("---")
     st.sidebar.markdown("© 2024   Alpha +")  # Copyright
@@ -158,7 +158,10 @@ if st.session_state["authentication_status"]:
     st.session_state["credentials"] = credentials
     current_user_credentials = st.session_state["credentials"]
 
+
 elif st.session_state["authentication_status"] is False:
-    st.error("Username/password is incorrect")
+    with col2:
+        st.error("Username/password is incorrect")
 elif st.session_state["authentication_status"] is None:
-    st.warning("Please enter your username and password")
+    with col2:
+        st.info("Please enter your username and password")

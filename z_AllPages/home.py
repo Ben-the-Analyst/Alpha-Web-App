@@ -1,15 +1,29 @@
 import streamlit as st
+import streamlit_authenticator as stauth
 from streamlit_gsheets import GSheetsConnection
-import pandas as pd
-import userstateconfig
 
 # from forms.routeform import route_planner
 from forms.newrouterform import new_route_planner
-from forms.dailyform import daily_form
-from forms.hcpform import hcp_form
+from forms.dailyform import daily_reporting_form
+
+# from forms.hcpform import hcp_form
 from filters.routeplanfilters import filter_modal, get_filtered_data
 
-# Style to reduce header height
+
+# --------------------AUTHENTICATION CHECK---------------------------------------------------------------
+if not st.session_state.get("authenticated"):
+    st.error("Please login to access this page")
+    st.stop()
+
+# --------------------GET USER SPECIFIC DATA(Signed in user)---------------------------------------------------------------
+username = st.session_state["username"]
+user_credentials = st.session_state["user_credentials"]
+# user_credentials = st.session_state["credentials"]["usernames"][username]
+user_territory = user_credentials["Territory_ID"]
+
+
+# --------------------REDUCE HEADER HEIGHT---------------------------------------------------------------
+
 reduce_header_height_style = """
     <style>
         div.block-container {padding-top:1rem;}
@@ -18,55 +32,48 @@ reduce_header_height_style = """
 st.markdown(reduce_header_height_style, unsafe_allow_html=True)
 
 
-# Load custom CSS
+# --------------------CUSTOM CSS---------------------------------------------------------------
+# Load the CSS at the beginning of the page
 def load_custom_css():
     with open("assets/css/style.css", "r") as f:
         st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
 
+load_custom_css()
+
 # create a connection to the Google Sheet
 conn = st.connection("gsheets", type=GSheetsConnection)
+
+# --------------------LOAD DATA---------------------------------------------------------------
 
 
 @st.cache_data(ttl=300)
 def load_route_data():
-    data = conn.read(worksheet="RoutePlanner")
-    # # Convert date strings to datetime objects
-    # data["Date"] = pd.to_datetime(data["Date"], format="%d-%m-%Y")
+    data = conn.read(worksheet="RoutePlan")
     return data
 
 
 @st.cache_data(ttl=300)
 def load_daily_data():
-    return conn.read(worksheet="DailyData")
+    return conn.read(worksheet="DailyReport")
 
 
 @st.cache_data(ttl=300)
-def load_hcp_data():
-    return conn.read(worksheet="HCPData")
+def load_hcp_clients_data():
+    return conn.read(worksheet="ClientsDatabase")
 
 
-# Get user's territory from session state
-# Load the credentials from config.py
-credentials = userstateconfig.credentials
-st.session_state["credentials"] = credentials
-username = st.session_state["name"]
-user_credentials = st.session_state["credentials"]["usernames"][username]
-user_territory = user_credentials["Territory_ID"]
+# --------TABS FOR DIFFERENT FORMS---------------------------------------------------------------
 
-# Load the CSS at the beginning of the page
-load_custom_css()
-
-# --------TABS FOR DIFFERENT FORMS--------------------------
-# tab = st.tabs(["Route Planner", "Daily Reporting", "HCP / Retailers"])
-tab = st.tabs(["Route Planner", "Daily Reporting"])
+tab = st.tabs(["Route Planner", "Daily Reporting", "HCP / Retailers"])
+# tab = st.tabs(["Route Planner", "Daily Reporting"])
 
 # Route Planner Form Tab
 with tab[0]:
-
+    # --------------------ROUTE PLANNER TAB----------------------------------------------------------------
     # Define button container
     with st.container(key="route_buttons_container"):
-        col1, col2 = st.columns(2, gap="small")
+        col1, col2 = st.columns([1.5, 1], gap="small")
 
         with col1:
             # Expander for Action
@@ -108,7 +115,7 @@ with tab[0]:
 
                     # Refresh Button
                     if st.button(
-                        "",
+                        "refresh",
                         help="Click to Refresh Data",
                         type="secondary",
                         icon=":material/refresh:",
@@ -132,7 +139,7 @@ with tab[0]:
                 Route_data = Route_data[Route_data["Territory"] == user_territory]
                 if not Route_data.empty:
                     display_data = Route_data.drop(
-                        columns=["Territory", "Agent", "TimeStamp"]
+                        # columns=["Territory", "Agent", "TimeStamp"]
                     )
             else:
                 display_data = Route_data.drop(columns=["Month"])
@@ -152,11 +159,11 @@ with tab[0]:
         else:
             st.dataframe(display_data, hide_index=True)
 
-# Daily Reporting Form Tab
+# --------------------DAILY REPORTING TAB----------------------------------------------------------------
 with tab[1]:
     data = {
         "Appointment / Follow-Up": "Scheduled future visits or calls with a contact to discuss the product or check on stock levels. OR required to for a follow-up.",
-        "Closed": "The institution/store/shop wasn’t open or permanently closed down.",
+        "Closed": "The institution/store/shop wasn't open or permanently closed down.",
         "Codes inactive": "Products were inactive or out of stock, No further action or stocking.",
         "Commitment": "A commitment made by a contact (e.g., nurse, pharmacist) to order, recommend, or prescribe Alpha.",
         "Complaint": "Feedback provided that raises issues or concerns about the product, stock, or service.",
@@ -164,7 +171,7 @@ with tab[1]:
         "Contact HQ": "Action item to reach out to headquarters for additional support or information.",
         "Delivered": "The product was delivered to the facility and confirmed as received.",
         "Introduction-Product Discussion": "Conversation introducing the product or discussing its benefits or use cases.",
-        "No Discussions": "No meaningful discussion or engagement took place during the visit./couldn’t reach the contact person.",
+        "No Discussions": "No meaningful discussion or engagement took place during the visit./couldn't reach the contact person.",
         "Not Stocking": "The facility or pharmacy is not currently or in the near future planning to stock the product.",
         "Ordered": "The facility placed an order for the product.",
         "Other Supplier": "The contact is sourcing products from another supplier (e.g., Citylink, Veteran).",
@@ -173,27 +180,19 @@ with tab[1]:
         "Stocked": "The facility already has the product in stock.",
         "Unavailable": "The contact/decision-maker of the facility was not available during the visit.",
     }
-    # Expander for Action
-    with st.expander("Outcomes Explanations", expanded=False, icon=":material/info:"):
-        # Streamlit app layout
-        st.title("Outcome Explanations")
-        st.write("Explore the various outcomes and their explanations below:")
-
-        for outcome, explanation in data.items():
-            st.markdown(f"- **{outcome}**: {explanation}")
 
     with st.container(key="daily_buttons_container"):
-        col1, col2 = st.columns(2, gap="small")
+        col1, col2 = st.columns([2, 1], gap="small")
 
         with col1:
             # Expander for Action
             with st.expander("Action", expanded=False, icon=":material/ads_click:"):
-                col1, col2, col3 = st.columns(3, gap="small")
+                col1, col2, col3, col4 = st.columns(4, gap="small")
                 with col1:
 
                     @st.dialog("Daily Activity Form")
                     def show_daily_form():
-                        daily_form()
+                        daily_reporting_form()
 
                     if st.button(
                         "Add ",
@@ -217,14 +216,33 @@ with tab[1]:
                 with col3:
                     # Refresh Button
                     if st.button(
-                        "",
+                        "refresh",
                         help="Click to Refresh Data",
                         type="secondary",
                         icon=":material/refresh:",
-                        key="more_daily_form",
+                        key="refresh_daily_form",
                     ):
                         st.cache_data.clear()  # Clear the cache
                         st.toast("Cache cleared. Reloading data...", icon="✅")
+
+                with col4:
+
+                    @st.dialog("Outcome Explanations")
+                    def show_outcomes():
+                        st.write(
+                            "Explore the various outcomes and their explanations below:"
+                        )
+
+                        for outcome, explanation in data.items():
+                            st.markdown(f"- **{outcome}**: {explanation}")
+
+                    if st.button(
+                        "outcomes",
+                        icon=":material/info:",
+                        key="outcomes_button",
+                        help="Click to view outcomes",
+                    ):
+                        show_outcomes()
 
     # Create empty container for dynamic table
     daily_table_container = st.empty()
@@ -241,9 +259,9 @@ with tab[1]:
             display_daily_data = Daily_data.drop(
                 columns=[
                     "TimeStamp",
-                    "Name",
-                    "Territory",
-                    "Institution (POS) Type",
+                    # "Name",
+                    # "Territory",
+                    # "Institution (POS) Type",
                     # "Institution Department",
                 ]
             )
@@ -265,86 +283,85 @@ with tab[1]:
         with daily_table_container:
             st.dataframe(display_daily_data, hide_index=True)
 
-# # HCP Form Tab
-# with tab[2]:
-#     # st.markdown("### HCP Form")
-#     # st.write("Please fill out the HCP Form below:")
 
-#     # establishing a Google Sheets connection
-#     with st.container(key="hcp_buttons_container"):
-#         col1, col2 = st.columns(2, gap="small")
+# --------------------HCP / RETAILERS TAB----------------------------------------------------------------
+with tab[2]:
+    with st.container(key="hcp_buttons_container"):
+        col1, col2 = st.columns([1.5, 1], gap="small")
 
-#         with col1:
-#             # Expander for Action
-#             with st.expander("Action", expanded=False, icon=":material/ads_click:"):
-#                 col1, col2, col3 = st.columns(3, gap="small")
-#                 with col1:
+        with col1:
+            # Expander for Action
+            with st.expander("Action", expanded=False, icon=":material/ads_click:"):
+                col1, col2, col3 = st.columns(3, gap="small")
+                with col1:
 
-#                     @st.dialog("HCP Form")
-#                     def show_hcp_form():
-#                         hcp_form()
+                    @st.dialog("HCP Form")
+                    def show_hcp_form():
+                        hcp_form()
 
-#                     if st.button(
-#                         "Add",
-#                         help="Click to add HCP",
-#                         type="primary",
-#                         icon=":material/library_add:",
-#                         key="add_hcp_form_button",
-#                     ):
-#                         show_hcp_form()
+                    if st.button(
+                        "Add",
+                        help="Click to add HCP",
+                        type="primary",
+                        icon=":material/library_add:",
+                        key="add_hcp_form_button",
+                    ):
+                        show_hcp_form()
 
-#                 with col2:
+                with col2:
 
-#                     st.button(
-#                         "Filters",
-#                         help="Click to add filters",
-#                         type="secondary",
-#                         icon=":material/tune:",
-#                         key="filter_hcp_form_button",
-#                     )
-#                 with col3:
-#                     # Refresh Button
-#                     if st.button(
-#                         "",
-#                         help="Click to Refresh Data",
-#                         type="secondary",
-#                         icon=":material/refresh:",
-#                         key="more_hcp_form",
-#                     ):
-#                         st.cache_data.clear()  # Clear the cache
-#                         st.toast("Cache cleared. Reloading data...", icon="✅")
+                    st.button(
+                        "Filters",
+                        help="Click to add filters",
+                        type="secondary",
+                        icon=":material/tune:",
+                        key="filter_hcp_form_button",
+                    )
+                with col3:
+                    # Refresh Button
+                    if st.button(
+                        "refresh",
+                        help="Click to Refresh Data",
+                        type="secondary",
+                        icon=":material/refresh:",
+                        key="refresh_hcp_form",
+                    ):
+                        st.cache_data.clear()  # Clear the cache
+                        st.toast("Cache cleared. Reloading data...", icon="✅")
 
-#     # Create empty container for dynamic table
-#     hcp_table_container = st.empty()
+    # Create empty container for dynamic table
+    hcp_table_container = st.empty()
 
-#     # Load data
-#     HCP_data = load_hcp_data()
-#     display_hcp_data = None
+    # Load data
+    HCP_Clients_data = load_hcp_clients_data()
+    display_hcp_data = None
 
-#     # Check if data exists and process it
-#     if HCP_data is not None and not HCP_data.empty:
-#         try:
-#             # Filter by territory for non-admin users
-#             if user_territory != "admin":
-#                 HCP_data = HCP_data[HCP_data["Territory"] == user_territory]
-#                 if not HCP_data.empty:
-#                     display_hcp_data = HCP_data.drop(
-#                         columns=["TimeStamp", "Name", "Territory"]
-#                     )
-#             else:
-#                 display_hcp_data = HCP_data.copy()
-#         except Exception as e:
-#             st.error(f"Error processing data: {str(e)}")
-#             display_hcp_data = None
+    # Check if data exists and process it
+    if HCP_Clients_data is not None and not HCP_Clients_data.empty:
+        try:
+            # Filter by territory for non-admin users
+            if user_territory != "admin":
+                HCP_Clients_data = HCP_Clients_data[
+                    HCP_Clients_data["Territory"] == user_territory
+                ]
+                if not HCP_Clients_data.empty:
+                    display_hcp_data = HCP_Clients_data.drop(
+                        columns=["Territory"]
+                    )  # Drop Territory column for non-admin users
+            else:
+                display_hcp_data = HCP_Clients_data.copy()
+        except Exception as e:
+            st.error(f"Error processing data: {str(e)}")
+            display_hcp_data = None
 
-#     # Display data or show empty state
-#     with hcp_table_container:
-#         if display_hcp_data is None or display_hcp_data.empty:
-#             col1, col2, col3 = st.columns(3, gap="small")
-#             with col2:
-#                 st.image(
-#                     "assets/images/alert.png",
-#                     caption="No data available. Please add to view.",
-#                 )
-#         else:
-#             st.dataframe(display_hcp_data, hide_index=True)
+    # Display data or show empty state
+    with hcp_table_container:
+        if display_hcp_data is None or display_hcp_data.empty:
+            col1, col2, col3 = st.columns(3, gap="small")
+            with col2:
+                st.image(
+                    "assets/images/alert.png",
+                    caption="No data available. Please add to view.",
+                )
+        else:
+            st.dataframe(display_hcp_data, hide_index=True)

@@ -15,3 +15,5 @@ enableXsrfProtection = false
 runOnSave = false
 
 
+[client]
+showSidebarNavigation = false
