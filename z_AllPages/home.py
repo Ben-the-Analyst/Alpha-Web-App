@@ -140,6 +140,7 @@ with tab[0]:
                 if not Route_data.empty:
                     display_data = Route_data.drop(
                         # columns=["Territory", "Agent", "TimeStamp"]
+                        columns=["TimeStamp","Agent"]
                     )
             else:
                 display_data = Route_data.drop(columns=["Month"])
