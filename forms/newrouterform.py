@@ -20,6 +20,34 @@ def current_time():
     return datetime.now(timezone)
 
 
+def get_current_month_details():
+    current_date = current_time()
+    current_month = current_date.strftime("%B")  # Full month name
+    current_week = (current_date.day - 1) // 7 + 1  # Calculate week of month
+    current_day = current_date.strftime("%A")  # Full day name
+    return current_month, current_week, current_day
+
+
+def get_month_options():
+    return [datetime(2024, m, 1).strftime("%B") for m in range(1, 13)]
+
+
+def get_week_of_month():
+    current_date = current_time()
+    last_day = (
+        current_date.replace(day=1) + pd.DateOffset(months=1) - pd.DateOffset(days=1)
+    ).day
+    return list(
+        range(1, (last_day // 7) + 2)
+    )  # Adding 2 to account for possible partial weeks
+
+
+def get_day_options():
+    return [
+        datetime(2024, 1, d).strftime("%A") for d in range(1, 8)
+    ]  # Using 2024 Jan as it starts with Monday
+
+
 # --------------------CACHE THE FUNCTION TO AVOID RELOADING DATA ON EACH ACTION--------------
 @st.cache_data(ttl=300)
 def fetch_data():
@@ -103,37 +131,40 @@ def new_route_planner():
 
     users, clients_list_data, existing_route_data = fetch_data()
 
-    MONTHS = [
-        "January",
-        "February",
-        "March",
-        "April",
-        "May",
-        "June",
-        "July",
-        "August",
-        "September",
-        "October",
-        "November",
-        "December",
-    ]
-    DAYS = [
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Saturday",
-        "Sunday",
-    ]
+    current_month, current_week, current_day = get_current_month_details()
 
     month = st.selectbox(
-        label="Month*", options=MONTHS, index=None, key="route_plan_month"
+        label="Month*",
+        options=get_month_options(),
+        index=get_month_options().index(current_month),
+        key="route_plan_month",
     )
-    week = st.number_input(
-        label="Week*", min_value=1, max_value=5, step=1, key="route_plan_week"
+
+    week = st.selectbox(
+        label="Week*",
+        options=get_week_of_month(),
+        index=(
+            get_week_of_month().index(current_week)
+            if current_week in get_week_of_month()
+            else 0
+        ),
+        key="route_plan_week",
     )
-    day = st.selectbox(label="Day*", options=DAYS, index=None, key="route_plan_day")
+
+    day = st.selectbox(
+        label="Day*",
+        options=get_day_options(),
+        index=get_day_options().index(current_day),
+        key="route_plan_day",
+    )
+
+    # month = st.selectbox(
+    #     label="Month*", options=MONTHS, index=None, key="route_plan_month"
+    # )
+    # week = st.number_input(
+    #     label="Week*", min_value=1, max_value=5, step=1, key="route_plan_week"
+    # )
+    # day = st.selectbox(label="Day*", options=DAYS, index=None, key="route_plan_day")
     date = st.date_input(label="Select Route Plan Date")
     # Get agent names and their territories
     agent_territories = get_agent_names(users)
