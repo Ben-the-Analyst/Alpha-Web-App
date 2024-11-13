@@ -125,7 +125,7 @@ def clear_form():
     st.session_state["new_hcp_prefix"] = ""
     st.session_state["new_hcp_client_name"] = ""
     st.session_state["new_hcp_workplace"] = ""
-    st.session_state["new_hcp_workplace_type"] = ""
+    st.session_state["new_hcp_workplace_type"] = None
     st.session_state["new_hcp_department"] = None
     st.session_state["new_hcp_cadre"] = None
     st.session_state["new_hcp_line_address"] = ""
