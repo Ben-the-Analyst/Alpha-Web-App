@@ -126,20 +126,20 @@ def clear_form():
     st.session_state["new_hcp_client_name"] = ""
     st.session_state["new_hcp_workplace"] = ""
     st.session_state["new_hcp_workplace_type"] = ""
-    st.session_state["new_hcp_department"] = ""
-    st.session_state["new_hcp_cadre"] = ""
+    st.session_state["new_hcp_department"] = None
+    st.session_state["new_hcp_cadre"] = None
     st.session_state["new_hcp_line_address"] = ""
     st.session_state["new_hcp_city"] = ""
     st.session_state["new_hcp_postal_area"] = ""
     st.session_state["new_hcp_state"] = ""
-    st.session_state["new_hcp_colour_codes"] = ""
+    st.session_state["new_hcp_colour_codes"] = None
     st.session_state["new_hcp_adoption_ladder"] = 0
     st.session_state["new_hcp_six_months_section"] = 0
     st.session_state["new_hcp_one_year_section"] = 0
     st.session_state["new_hcp_three_years_section"] = 0
-    st.session_state["new_hcp_potentiality"] = ""
-    st.session_state["new_hcp_level_of_influence"] = ""
-    st.session_state["new_hcp_cycle_goals"] = ""
+    st.session_state["new_hcp_potentiality"] = None
+    st.session_state["new_hcp_level_of_influence"] = None
+    st.session_state["new_hcp_cycle_goals"] = None
     st.session_state["new_hcp_product_px_reco"] = []
 
 
