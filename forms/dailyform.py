@@ -68,6 +68,7 @@ def fetch_data():
     existing_daily_data = conn.read(worksheet="DailyReport")
     outcomes = conn.read(worksheet="Outcome")
     users = conn.read(worksheet="Users")
+
     return clients_list_data, existing_daily_data, outcomes, users
 
 
@@ -148,7 +149,9 @@ def daily_reporting_form():
     clients_list_data, existing_daily_data, outcomes, users = fetch_data()
 
     OUTCOMES = outcomes["Outcomes"].unique().tolist()
+    PREFIXES = ["Mr.", "Mrs.", "Ms.", "Dr.", "Prof."]
     OUTCOMES = sorted(OUTCOMES)
+    PREFIXES = sorted(PREFIXES)
 
     # Get agent names and their territories
     agent_territories = get_agent_names(users)
@@ -205,6 +208,10 @@ def daily_reporting_form():
         key="daily_rpt_clientselectedclient",
     )
 
+    prefix = st.selectbox(
+        label="Prefix", options=PREFIXES, index=None, key="daily_rpt_prefix"
+    )
+
     objective = st.text_input(label="Task Objective*", key="daily_rpt_objective")
 
     comments = st.text_area(label="Comments/Notes*", key="daily_rpt_comments")
@@ -244,6 +251,7 @@ def daily_reporting_form():
             and selected_address
             and selected_workplace
             and selected_client
+            and prefix
             and objective
             and comments
             and outcomes
@@ -274,6 +282,7 @@ def daily_reporting_form():
                                 "Address": selected_address,
                                 "Workplace": selected_workplace,
                                 "Client_ID": client_id_data.get(selected_address),
+                                "Prefix": prefix,
                                 "Client_Name": selected_client,
                                 "Task_Objective": objective,
                                 "Comments/Notes": comments,

@@ -385,6 +385,7 @@ def hcp_form_existing():
                     workplace_key = f"{selected_address}_{selected_workplace}"
                     workplace_info = workplace_details.get(workplace_key, {})
                     products_str = ", ".join(product_px_reco)
+                    client_name = client_name.capitalize()
 
                     daily_data = pd.DataFrame(
                         [

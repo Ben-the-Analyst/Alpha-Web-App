@@ -6,6 +6,7 @@ from streamlit_gsheets import GSheetsConnection
 from forms.newrouterform import new_route_planner
 from forms.dailyform import daily_reporting_form
 from forms.hcpformexisting import hcp_form_existing
+from forms.hcpform import hcp_form
 
 from filters.routeplanfilters import filter_modal, get_filtered_data
 
@@ -296,13 +297,13 @@ with tab[2]:
             col1, col2, col3 = st.columns(3, gap="small")
             with col1:
 
-                @st.dialog("HCP Form")
+                @st.dialog("New HCP/Client/Retailer Form")
                 def show_hcp_form():
                     hcp_form()
 
                 if st.button(
                     "Add New Client to New Workplace",
-                    help="Click to add HCP",
+                    help="Click to add new HCP/Client/Retailer",
                     type="primary",
                     icon=":material/library_add:",
                     key="add_hcp_form_button",
