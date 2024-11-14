@@ -295,18 +295,14 @@ def new_route_planner():
 def get_client_ids(clients_list_data, selected_clients, selected_workplace):
     """
     Get client IDs for selected clients in a specific workplace, maintaining the same order
-
-    Args:
-        clients_list_data (DataFrame): DataFrame containing client information
-        selected_clients (list): List of selected client names in desired order
-        selected_workplace (str): Selected workplace name
-
-    Returns:
-        str: Comma-separated string of client IDs, ordered to match selected_clients
     """
-    # Filter data for the selected workplace
-    workplace_data = clients_list_data[
-        clients_list_data["Workplace"] == selected_workplace
+    # Fetch fresh data from the database
+    conn = st.connection("gsheets", type=GSheetsConnection)
+    fresh_clients_data = conn.read(worksheet="ClientsDatabase")
+
+    # Filter fresh data for the selected workplace
+    workplace_data = fresh_clients_data[
+        fresh_clients_data["Workplace"] == selected_workplace
     ]
 
     # Create a dictionary mapping client names to their IDs
@@ -315,9 +311,6 @@ def get_client_ids(clients_list_data, selected_clients, selected_workplace):
     )
 
     # Get client IDs in the same order as selected_clients
-    ordered_client_ids = [
-        str(client_id_map[client])
-        for client in selected_clients  # Remove int() conversion
-    ]
+    ordered_client_ids = [str(client_id_map[client]) for client in selected_clients]
 
     return ", ".join(ordered_client_ids)
