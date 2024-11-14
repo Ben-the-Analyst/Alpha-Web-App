@@ -119,31 +119,57 @@ def build_hierarchical_data(df, territory_id=None):
     return cached_data, client_id_data, workplace_details
 
 
+# --------------------GENERATE CLIENT ID---------------------------------------------------------------
+def generate_client_id(conn):
+    """
+    Generates a unique client ID in the format AP/CL/YYMM/XXXX
+    where XXXX is an incremental number that resets each month
+    """
+    current_date = datetime.now()
+    current_ym = current_date.strftime("%y%m")
+    
+    # Fetch only the Client_ID column directly from the database
+    latest_ids = conn.read(worksheet="ClientsDatabase", usecols=["Client_ID"])
+    
+    # Filter existing IDs for the current month
+    pattern = f"AP/CL/{current_ym}/\\d{{4}}"
+    current_month_ids = latest_ids[
+        latest_ids["Client_ID"].str.match(pattern, na=False)
+    ]["Client_ID"].tolist()
+
+    if not current_month_ids:
+        next_number = 1
+    else:
+        numbers = [int(id.split("/")[-1]) for id in current_month_ids]
+        next_number = max(numbers) + 1
+
+    new_id = f"AP/CL/{current_ym}/{next_number:04d}"
+    return new_id
+
+
 # --------------------DAILY REPORTING FORM---------------------------------------------------------------
 def clear_form():
     """Clears the form input fields."""
-    st.session_state["new_hcp_prefix"] = ""
-    st.session_state["new_hcp_client_name"] = ""
-    st.session_state["new_hcp_workplace"] = ""
-    st.session_state["new_hcp_workplace_type"] = None
-    st.session_state["new_hcp_department"] = None
-    st.session_state["new_hcp_cadre"] = None
-    st.session_state["new_hcp_line_address"] = ""
-    st.session_state["new_hcp_city"] = ""
-    st.session_state["new_hcp_postal_area"] = ""
-    st.session_state["new_hcp_state"] = ""
-    st.session_state["new_hcp_colour_codes"] = None
-    st.session_state["new_hcp_adoption_ladder"] = 0
-    st.session_state["new_hcp_six_months_section"] = 0
-    st.session_state["new_hcp_one_year_section"] = 0
-    st.session_state["new_hcp_three_years_section"] = 0
-    st.session_state["new_hcp_potentiality"] = None
-    st.session_state["new_hcp_level_of_influence"] = None
-    st.session_state["new_hcp_cycle_goals"] = None
-    st.session_state["new_hcp_product_px_reco"] = []
+    st.session_state["healthcare_provider_client_address"] = None
+    st.session_state["healthcare_provider_workplace"] = None
+    st.session_state["healthcare_provider_dept"] = None
+    st.session_state["healthcare_provider_prefix"] = None
+    st.session_state["healthcare_provider_client_name"] = ""
+    st.session_state["healthcare_provider_cadre"] = None
+    st.session_state["healthcare_provider_color_codes"] = None
+    st.session_state["healthcare_provider_adoption_ladder"] = 0
+    st.session_state["healthcare_provider_babies_six_months"] = 0
+    st.session_state["healthcare_provider_babies_one_year"] = 0
+    st.session_state["healthcare_provider_babies_three_years"] = 0
+    st.session_state["healthcare_provider_potentiality"] = None
+    st.session_state["healthcare_provider_influence_level"] = None
+    st.session_state["healthcare_provider_cycle_goals"] = None
+    st.session_state["healthcare_provider_product_recommendations"] = []
 
 
-def hcp_form():
+def hcp_form_existing_workplace():
+    st.write("For New Client in an Existing Workplace in an Existing Address")
+
     if "show_clear_button" not in st.session_state:
         st.session_state.show_clear_button = False
     f3, f4 = st.columns(2, gap="medium")
@@ -219,7 +245,7 @@ def hcp_form():
         label="Select Your Name*",
         options=sorted(agent_territories.keys()),
         index=None,
-        key="hcp_selected_agent",
+        key="healthcare_provider_selected_agent",
     )
 
     # Get territory ID for selected agent
@@ -227,77 +253,62 @@ def hcp_form():
         agent_territories.get(selected_agent) if selected_agent else None
     )
 
-    prefix = st.selectbox(
-        label="Prefix",
-        options=PREFIXES,
-        key="hcp_prefix",
-        index=None,
+    # Build hierarchical data filtered by territory
+    cached_data, client_id_data, workplace_details = (
+        build_hierarchical_data(clients_list_data, territory_id=selected_territory)
+        if selected_territory
+        else ({}, {}, {})
     )
 
-    client_name = st.text_input(
-        label="HCP/Client/Retailer Name: (Surname, Firstname)*",
-        key="new_hcp_client_name",
-        placeholder="e.g. Doe, John",
+    selected_address = st.selectbox(
+        label="Select Client Address",
+        options=cached_data.keys() if cached_data else [],
+        placeholder="select address",
+        key="healthcare_provider_client_address",
     )
 
-    cadre = st.selectbox(
-        label="Cadre",
-        options=CADRE,
-        key="new_hcp_cadre",
-        index=None,
-    )
-
-    workplace = st.text_input(
-        label="Workplace*",
-        key="new_hcp_workplace",
-        placeholder="e.g. Hospital Name",
-    )
-
-    workplace_type = st.selectbox(
-        label="Workplace Type",
-        options=TYPE,
-        key="new_hcp_workplace_type",
-        placeholder="e.g. Hospital",
-        index=None,
+    selected_workplace = st.selectbox(
+        label="Select Client Workplace",
+        options=(
+            sorted(cached_data[selected_address].keys())
+            if selected_address and selected_address in cached_data
+            else []
+        ),
+        placeholder="select a work_place",
+        key="healthcare_provider_workplace",
     )
 
     department = st.selectbox(
         label="Department",
         options=DEPARTMENT,
-        key="new_hcp_department",
+        key="healthcare_provider_dept",
         index=None,
-        placeholder="e.g. Pharmacy",
     )
 
-    line_address = st.text_input(
-        label="Line Address*",
-        placeholder="e.g. Main Street",
-        key="new_hcp_line_address",
+    prefix = st.selectbox(
+        label="Prefix",
+        options=PREFIXES,
+        key="healthcare_provider_prefix",
+        index=None,
     )
 
-    postal_area = st.text_input(
-        label="Postal Area*",
-        placeholder="e.g. Kilimani",
-        key="new_hcp_postal_area",
+    client_name = st.text_input(
+        label="Client Name. eg; John Doe",
+        key="healthcare_provider_client_name",
     )
 
-    city = st.text_input(
-        label="City*",
-        placeholder="e.g. Nairobi",
-        key="new_hcp_city",
-    )
-
-    state = st.text_input(
-        label="State*",
-        placeholder="e.g. Nairobi County-Embakasi East",
-        key="new_hcp_state",
+    cadre = st.selectbox(
+        label="Cadre",
+        options=CADRE,
+        key="healthcare_provider_cadre",
+        index=None,
     )
 
     colour_codes = st.selectbox(
-        label="Colour CODE*",
+        "Colour CODE*",
         options=COLORCODES,
-        key="new_hcp_colour_codes",
         index=None,
+        key="healthcare_provider_color_codes",
     )
 
     st.markdown(
@@ -311,32 +322,29 @@ def hcp_form():
         max_value=10,
         value=None,
         step=1,
-        key="new_   hcp_adoption_ladder",
+        key="healthcare_provider_adoption_ladder",
     )
 
     st.markdown(section_label)
     six_months_section = st.number_input(
         label="Number of babies seen in 0 - 6 Months*",
-        min_value=0,
         value=None,
         step=1,
-        key="new_hcp_six_months_section",
+        key="healthcare_provider_babies_six_months",
     )
 
     one_year_section = st.number_input(
         label="Number of babies seen in 6 months - 1 Year*",
-        min_value=0,
         value=None,
         step=1,
-        key="new_hcp_one_year_section",
+        key="healthcare_provider_babies_one_year",
     )
 
     three_years_section = st.number_input(
         label="Number of babies seen in 1 - 3 Years*",
-        min_value=0,
         value=None,
         step=1,
-        key="new_hcp_three_years_section",
+        key="healthcare_provider_babies_three_years",
     )
 
     st.markdown(
@@ -348,22 +356,22 @@ def hcp_form():
         "Choose *",
         options=["High", "Moderate", "Low"],
         index=None,
-        key="new_hcp_potentiality",
+        key="healthcare_provider_potentiality",
     )
 
     level_of_influence = st.selectbox(
         "Level of Influence*",
         options=["High", "Moderate", "Low"],
         index=None,
-        key="new_hcp_level_of_influence",
+        key="healthcare_provider_influence_level",
     )
     cycle_goals = st.selectbox(
-        "Cycle Goals*", options=GOALS, index=None, key="new_hcp_cycle_goals"
+        "Cycle Goals*", options=GOALS, index=None, key="healthcare_provider_cycle_goals"
     )
     product_px_reco = st.multiselect(
-        label="Product Px/RECO*",
+        "Product Px/RECO*",
         options=PRODUCTS,
-        key="new_hcp_product_px_reco",
+        key="healthcare_provider_product_recommendations",
     )
 
     st.markdown("**required*")
@@ -381,14 +389,12 @@ def hcp_form():
         use_container_width=True,
     ):
         if not (
-            workplace
-            and city
-            and postal_area
-            and state
+            selected_agent
+            and selected_address
+            and selected_workplace
             and department
             and prefix
             and client_name
-            and cadre
             and colour_codes
             and adoption_ladder
             and six_months_section
@@ -399,28 +405,37 @@ def hcp_form():
             and cycle_goals
             and product_px_reco
         ):
-            message_placeholder.error("Ensure all mandatory fields are filled.")
+            message_placeholder.warning("Ensure all mandatory fields are filled.")
+
+
+        # Get fresh data from database for validation
+        conn = st.connection("gsheets", type=GSheetsConnection)
+        live_clients_data = conn.read(worksheet="ClientsDatabase", usecols=["Client_Name"])
+
+        # Convert inputs to lowercase for case-insensitive comparison
+        client_name_lower = client_name.lower().strip()
+
+        if (
+            live_clients_data["Client_Name"].str.lower().str.strip()
+            == client_name_lower
+        ).any():
+            message_placeholder.warning("A client with this name already exists.")
+
         else:
             # Show spinner in the new location
             with spinner_placeholder:
                 with st.spinner("Submitting your details..."):
-                    # Collecting and submitting data
                     submission_time = current_time()
+                    conn = st.connection("gsheets", type=GSheetsConnection)
+                    new_client_id = generate_client_id(conn)
 
+                    # Get workplace details using the composite key
+                    workplace_key = f"{selected_address}_{selected_workplace}"
+                    workplace_info = workplace_details.get(workplace_key, {})
                     products_str = ", ".join(product_px_reco)
-                    client_name = client_name.capitalize()
-                    cadre = cadre.capitalize()
-                    workplace = workplace.capitalize()
-                    workplace_type = workplace_type.capitalize()
-                    department = department.capitalize()
-                    line_address = line_address.capitalize()
-                    city = city.capitalize()
-                    postal_area = postal_area.capitalize()
-                    state = state.capitalize()
-                    colour_codes = colour_codes.capitalize()
-                    prefix = prefix.capitalize()
+                    client_name = client_name.title()
 
-                    daily_data = pd.DataFrame(
+                    data = pd.DataFrame(
                         [
                             {
                                 "TimeStamp": submission_time.strftime(
@@ -428,16 +443,19 @@ def hcp_form():
                                 ),
                                 "Agent": selected_agent,
                                 "Territory": selected_territory,
+                                "Client_ID": new_client_id,
                                 "Prefix": prefix,
                                 "Client_Name": client_name,
                                 "Cadre": cadre,
-                                "Workplace": workplace,
-                                "Workplace_Type": workplace_type,
-                                "City": city,
-                                "Postal_Area": postal_area,
-                                "State": state,
+                                "Workplace": selected_workplace,
+                                "Workplace_Type": workplace_info.get(
+                                    "Workplace_Type", ""
+                                ),
+                                "City": workplace_info.get("City", ""),
+                                "Postal_Area": workplace_info.get("Postal_Area", ""),
+                                "State": workplace_info.get("State", ""),
                                 "Department": department,
-                                "Line_Address": line_address,
+                                "Line_Address": selected_address,
                                 "Colour CODE": colour_codes,
                                 "Adoption Ladder": adoption_ladder,
                                 "Nb of  babies seen 0 - 6 Months": six_months_section,
@@ -453,15 +471,15 @@ def hcp_form():
 
                     # Append data
                     conn = st.connection("gsheets", type=GSheetsConnection)
-                    existing_pending_clients_data = pd.concat(
-                        [existing_pending_clients_data, daily_data], ignore_index=True
+                    clients_list_data = pd.concat(
+                        [clients_list_data, data], ignore_index=True
                     )
-                    conn.update(
-                        worksheet="PendingClients", data=existing_pending_clients_data
-                    )
+                    conn.update(worksheet="ClientsDatabase", data=clients_list_data)
 
-            # Display success
+            # Display success message with the new client ID
             message_placeholder.success(
-                "Client Details successfully submitted!",
+                f"Client Details successfully submitted! Client ID: {new_client_id}",
                 icon=":material/thumb_up:",
             )
+
+            st.cache_data.clear()

@@ -5,8 +5,9 @@ from streamlit_gsheets import GSheetsConnection
 # from forms.routeform import route_planner
 from forms.newrouterform import new_route_planner
 from forms.dailyform import daily_reporting_form
-from forms.hcpformexisting import hcp_form_existing
-from forms.hcpform import hcp_form
+from forms.hcpformexistingworkplace import hcp_form_existing_workplace
+from forms.hcpformexistingaddress import hcp_form_existing_address
+from forms.hcpformnewclient import hcp_form_new_client
 
 from filters.routeplanfilters import filter_modal, get_filtered_data
 
@@ -294,90 +295,95 @@ with tab[2]:
     # Expander for Action
     with st.expander("Action", expanded=False, icon=":material/ads_click:"):
         with st.container():
-            col1, col2, col3 = st.columns(3, gap="small")
+            col1, col2, col3, col4 = st.columns([1, 1, 1, 0.4], gap="small")
             with col1:
 
                 @st.dialog("New HCP/Client/Retailer Form")
-                def show_hcp_form():
-                    hcp_form()
+                def show_hcp_form_new_client():
+                    hcp_form_new_client()
 
                 if st.button(
-                    "Add New Client to New Workplace",
+                    "Add Client (New Workplace & New Address)",
                     help="Click to add new HCP/Client/Retailer",
                     type="primary",
                     icon=":material/library_add:",
                     key="add_hcp_form_button",
                 ):
-                    show_hcp_form()
+                    show_hcp_form_new_client()
 
             with col2:
 
-                @st.dialog("HCP Form Existing")
-                def show_hcp_form_existing():
-                    hcp_form_existing()
+                @st.dialog("Add Client to Existing Workplace")
+                def show_hcp_form_existing_workplace():
+                    hcp_form_existing_workplace()
 
                 if st.button(
-                    "Add Client to Existing Workplace",
+                    "Add Client (Existing Workplace)",
                     help="Click to add existing HCP",
                     type="secondary",
                     icon=":material/library_add:",
                     key="add_hcp_form_existing_button",
                 ):
-                    show_hcp_form_existing()
+                    show_hcp_form_existing_workplace()
 
-            # with col3:
-
-            #     st.button(
-            #         "Filters",
-            #         help="Click to add filters",
-            #         type="secondary",
-            #         icon=":material/tune:",
-            #         key="filter_hcp_form_button",
-            #     )
             with col3:
-                # Refresh Button
+
+                @st.dialog("Add Client to Existing Address")
+                def show_hcp_form_existing_address():
+                    hcp_form_existing_address()
+
                 if st.button(
-                    "refresh",
+                    "Add Client (Existing Address)",
+                    help="Click to add existing HCP",
+                    type="secondary",
+                    icon=":material/library_add:",
+                    key="add_hcp_form_existing_address_button",
+                ):
+                    show_hcp_form_existing_address()
+
+            with col4:
+                if st.button(
+                    "Refresh",
                     help="Click to Refresh Data",
                     type="secondary",
                     icon=":material/refresh:",
                     key="refresh_hcp_form",
                 ):
-                    st.cache_data.clear()  # Clear the cache
+                    st.cache_data.clear()
                     st.toast("Cache cleared. Reloading data...", icon="✅")
 
         # ----------PENDING DATA ------------------------------------------------------------
-        pending_clients_data = load_pending_clients_data()
-        display_pending_data = None
+        # pending_clients_data = load_pending_clients_data()
+        # display_pending_data = None
 
-        # Check if data exists and process it
-        if pending_clients_data is not None and not pending_clients_data.empty:
-            try:
-                # Filter by territory for non-admin users
-                if user_territory != "admin":
-                    pending_clients_data = pending_clients_data[
-                        pending_clients_data["Territory"] == user_territory
-                    ]
-                    if not pending_clients_data.empty:
-                        display_pending_data = pending_clients_data.drop(
-                            columns=["Territory", "Workplace_Type", "State"]
-                        )  # Drop Territory column for non-admin users
-                else:
-                    display_pending_data = pending_clients_data.copy()
-            except Exception as e:
-                st.error(f"Error processing data: {str(e)}")
-                display_pending_data = None
+        # # Check if data exists and process it
+        # if pending_clients_data is not None and not pending_clients_data.empty:
+        #     try:
+        #         # Filter by territory for non-admin users
+        #         if user_territory != "admin":
+        #             pending_clients_data = pending_clients_data[
+        #                 pending_clients_data["Territory"] == user_territory
+        #             ]
+        #             if not pending_clients_data.empty:
+        #                 display_pending_data = pending_clients_data.drop(
+        #                     columns=["Territory", "Workplace_Type", "State"]
+        #                 )  # Drop Territory column for non-admin users
+        #         else:
+        #             display_pending_data = pending_clients_data.copy()
+        #     except Exception as e:
+        #         st.error(f"Error processing data: {str(e)}")
+        #         display_pending_data = None
 
-        # Display data or show empty state
-        if display_pending_data is None or display_pending_data.empty:
-            col1, col2, col3 = st.columns(3, gap="small")
-            with col2:
-                st.image(
-                    "assets/images/alert.png",
-                    caption="No data available. Please add to view.",
-                )
-        else:
-            st.dataframe(display_pending_data, hide_index=True)
+        # # Display data or show empty state
+        # if display_pending_data is None or display_pending_data.empty:
+        #     col1, col2, col3 = st.columns(3, gap="small")
+        #     with col2:
+        #         st.image(
+        #             "assets/images/alert.png",
+        #             caption="No data available. Please add to view.",
+        #         )
+        # else:
+        #     st.dataframe(display_pending_data, hide_index=True)
 
     # Create empty container for dynamic table
     hcp_table_container = st.empty()
@@ -396,7 +402,13 @@ with tab[2]:
                 ]
                 if not HCP_Clients_data.empty:
                     display_hcp_data = HCP_Clients_data.drop(
-                        columns=["Territory", "Workplace_Type", "State"]
+                        columns=[
+                            "Territory",
+                            "Workplace_Type",
+                            "State",
+                            "TimeStamp",
+                            "Agent",
+                        ]
                     )  # Drop Territory column for non-admin users
             else:
                 display_hcp_data = HCP_Clients_data.copy()
