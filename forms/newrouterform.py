@@ -302,7 +302,7 @@ def get_client_ids(clients_list_data, selected_clients, selected_workplace):
         selected_workplace (str): Selected workplace name
 
     Returns:
-        str: Comma-separated string of client IDs without decimals, ordered to match selected_clients
+        str: Comma-separated string of client IDs, ordered to match selected_clients
     """
     # Filter data for the selected workplace
     workplace_data = clients_list_data[
@@ -316,7 +316,8 @@ def get_client_ids(clients_list_data, selected_clients, selected_workplace):
 
     # Get client IDs in the same order as selected_clients
     ordered_client_ids = [
-        str(int(client_id_map[client])) for client in selected_clients
+        str(client_id_map[client])
+        for client in selected_clients  # Remove int() conversion
     ]
 
     return ", ".join(ordered_client_ids)
