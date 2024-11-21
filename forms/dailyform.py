@@ -270,11 +270,11 @@ def daily_reporting_form():
                 key="calculation_products_new",  # Changed key
             )
             facings = st.text_input(
-                label="Enter Facings (e.g., 5 10)",
+                label="Facings (e.g., 5 10) - Separate with space",
                 key="calculation_facings_new",  # Changed key
             )
             depth = st.text_input(
-                label="Enter Depth (e.g., 2 3)", key="calculation_depth_new"
+                label="Depth (e.g., 2 3) - Separate with space", key="calculation_depth_new"
             )  # Changed key
 
     # Function to merge products with Input/Calculation inputs
@@ -318,7 +318,7 @@ def daily_reporting_form():
             "Competitors", options=COMPETITORS, key="daily_rpt_competitors"
         )
         competitors_sos = st.text_input(
-            label="Enter Competitors SOS (e.g., 2 3)", key="sos_depth"
+            label="Competitors SOS (e.g., 2 3) - Separate with space", key="sos_depth"
         )  # Updated label
 
     # Function to merge SOH inputs
