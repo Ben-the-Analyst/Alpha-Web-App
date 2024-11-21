@@ -42,12 +42,7 @@ def current_month():
 def current_week():
     """Returns the current week number of the month (1-5)"""
     current_date = current_time()
-    # Get the first day of the month
-    first_day = current_date.replace(day=1)
-    # Get the day of the first week containing the 1st of the month
-    first_week_day = first_day.day - first_day.weekday()
-    # Calculate current week number
-    current_week = ((current_date.day - first_week_day) // 7) + 1
+    current_week = (current_date.day - 1) // 7 + 1  # Calculate week of month
     return current_week
 
 
@@ -68,8 +63,9 @@ def fetch_data():
     existing_daily_data = conn.read(worksheet="DailyReport")
     outcomes = conn.read(worksheet="Outcome")
     users = conn.read(worksheet="Users")
+    competitorslist = conn.read(worksheet="Competitors")
 
-    return clients_list_data, existing_daily_data, outcomes, users
+    return clients_list_data, existing_daily_data, outcomes, users, competitorslist
 
 
 # Add new function to get agent names
@@ -130,6 +126,10 @@ def clear_form():
     st.session_state["daily_rpt_outcomes"] = None
     st.session_state["daily_rpt_future_objective"] = ""
     st.session_state["daily_rpt_appointment"] = datetime.now().date()
+    st.session_state["report_type_selection"] = None
+    st.session_state["deal_size"] = 0
+    st.session_state["daily_rpt_competitors"] = []
+    st.session_state["competition_updates"] = ""
 
 
 def daily_reporting_form():
@@ -146,12 +146,13 @@ def daily_reporting_form():
         ):
             clear_form()
 
-    clients_list_data, existing_daily_data, outcomes, users = fetch_data()
+    clients_list_data, existing_daily_data, outcomes, users, competitorslist = (
+        fetch_data()
+    )
 
-    OUTCOMES = outcomes["Outcomes"].unique().tolist()
-    PREFIXES = ["Mr.", "Mrs.", "Ms.", "Dr.", "Prof."]
-    OUTCOMES = sorted(OUTCOMES)
-    PREFIXES = sorted(PREFIXES)
+    OUTCOMES = sorted(outcomes["Outcomes"].unique().tolist())
+    PREFIXES = sorted(["Mr.", "Mrs.", "Ms.", "Dr.", "Prof."])
+    COMPETITORS = sorted(competitorslist["Competitors"].unique().tolist())
 
     # Get agent names and their territories
     agent_territories = get_agent_names(users)
@@ -177,14 +178,14 @@ def daily_reporting_form():
     )
 
     selected_address = st.selectbox(
-        label="Select Client Address",
+        label="Select Client Address*",
         options=cached_data.keys() if cached_data else [],
         placeholder="select address",
         key="daily_rpt_clientaddressselectedaddress",
     )
 
     selected_workplace = st.selectbox(
-        label="Select Client Workplace",
+        label="Select Client Workplace*",
         options=(
             sorted(cached_data[selected_address].keys())
             if selected_address and selected_address in cached_data
@@ -195,7 +196,7 @@ def daily_reporting_form():
     )
 
     selected_client = st.selectbox(
-        label="Select Client Name",
+        label="Select Client Name*",
         options=(
             sorted(cached_data[selected_address][selected_workplace])
             if selected_address
@@ -225,11 +226,79 @@ def daily_reporting_form():
     )
 
     future_objective = st.text_area(
-        label="Future Task Objective", key="daily_rpt_future_objective"
+        label="Future Task Objective*", key="daily_rpt_future_objective"
     )
 
     appointment = st.date_input(
-        label="Next Appointment", format="DD/MM/YYYY", key="daily_rpt_appointment"
+        label="Next Appointment*", format="DD/MM/YYYY", key="daily_rpt_appointment"
+    )
+
+    # Separate SOH section
+    with st.expander("SOH", icon=":material/shelves:", expanded=True):
+        soh_products = st.multiselect(
+            label="Select SOH Products",
+            options=["A1", "A2"],
+            key="soh_products",
+        )
+        soh_input = st.text_input(label="Enter SOH (e.g., 10 10)", key="soh_value")
+
+    # Separate SOS section
+    with st.expander("SOS", icon=":material/shelf_position:", expanded=True):
+        sos_products = st.multiselect(
+            label="Select SOS Products",
+            options=["A1", "A2"],
+            key="sos_products",
+        )
+        facings = st.text_input(label="Enter Facings (e.g., 5 10)", key="sos_facings")
+        depth = st.text_input(label="Enter Depth (e.g., 2 3)", key="sos_depth")
+
+    # Function to merge SOH inputs
+    def merge_soh_inputs(products, soh_input=None):
+        result = []
+        if soh_input:
+            soh_values = soh_input.split()
+            for product, value in zip(products, soh_values):
+                result.append(f"{product}({value})")
+        return " ".join(result)
+
+    # Function to merge SOS inputs
+    def merge_sos_inputs(products, facings=None, depth=None):
+        result = []
+        if facings and depth:
+            facings_values = list(map(int, facings.split()))
+            depth_values = list(map(int, depth.split()))
+            for product, facings_value, depth_value in zip(
+                products, facings_values, depth_values
+            ):
+                result.append(
+                    f"{product}(F;{facings_value} D;{depth_value})"
+                )  # Changed format to F;value D;value
+        return " ".join(result)
+
+    # Capture the data from SOH and SOS
+    soh = merge_soh_inputs(soh_products, soh_input)
+    sos = merge_sos_inputs(sos_products, facings, depth)
+
+    # # Debugging button to display the submitted data
+    if st.button("Debug Submitted Data", key="debug_button"):
+        st.write("SOH/SOS Data Submitted:")
+        st.write(soh)
+        st.write(sos)
+
+    deal_size = st.number_input(
+        label="Deal Size(LPO) i.e. Number of tins",
+        min_value=0,
+        value=None,
+        step=1,
+        key="deal_size",
+    )
+
+    competitors = st.multiselect(
+        "Competitors", options=COMPETITORS, key="daily_rpt_competitors"
+    )
+    competition_updates = st.text_input(
+        label="Competition Remarks (e.g., Out of Stock, Promotion, Pricing Change, etc.)",
+        key="competition_updates",
     )
 
     st.markdown("**required*")
@@ -251,7 +320,6 @@ def daily_reporting_form():
             and selected_address
             and selected_workplace
             and selected_client
-            and prefix
             and objective
             and comments
             and outcomes
@@ -259,6 +327,7 @@ def daily_reporting_form():
             and appointment
         ):
             message_placeholder.warning("Ensure all mandatory fields are filled.")
+            st.stop()
         else:
             # Show spinner in the new location
             with spinner_placeholder:
@@ -268,6 +337,10 @@ def daily_reporting_form():
                     current_month_val = current_month()
                     current_week_val = current_week()
                     current_day_val = today_dayOfweek()
+
+                    # Convert selected_client list to comma-separated string
+                    competitors_names_str = ", ".join(competitors)
+
                     daily_data = pd.DataFrame(
                         [
                             {
@@ -289,6 +362,10 @@ def daily_reporting_form():
                                 "Outcome": outcomes,
                                 "Future_Task_Objective": future_objective,
                                 "Next_Appointment": appointment.strftime("%d-%m-%Y"),
+                                "SOH/SOS": soh,
+                                "Deal Size(LPO)": deal_size,
+                                "Competitors": competitors_names_str,
+                                "Competitors Updates": competition_updates,
                             }
                         ]
                     )

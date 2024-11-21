@@ -55,7 +55,7 @@
 .st-key-refresh_route_planner button,
 .st-key-outcomes_button button {
     border-radius: 100px;
-    min-width: 100px;
+    /* min-width: 100px; */
     border: none;
 }
 

@@ -49,7 +49,7 @@ def fetch_data():
     institution_types = conn.read(worksheet="Type")
     institutions_department = conn.read(worksheet="Department")
     cycle_goals = conn.read(worksheet="Cycle_Goals")
-    product_px_reco = conn.read(worksheet="Products")
+    product_px_reco = conn.read(worksheet="Competitors")
     return (
         clients_list_data,
         existing_pending_clients_data,
@@ -206,7 +206,7 @@ def hcp_form_new_client():
     TYPE = institution_types["Type"].unique().tolist()
     DEPARTMENT = institutions_department["Department"].unique().tolist()
     GOALS = cycle_goals["Cycle_Goals"].unique().tolist()
-    PRODUCTS = product_px_reco["Products"].unique().tolist()
+    PRODUCTS = product_px_reco["Competitors"].unique().tolist()
 
     # Sorted lists
     PREFIXES = sorted(PREFIXES)
@@ -238,7 +238,7 @@ def hcp_form_new_client():
     """
 
     section_label = """
-    ### Section: Reach
+    
     For the next 3 Questions, input estimates as numbers.
     """
 
@@ -342,42 +342,43 @@ def hcp_form_new_client():
         max_value=10,
         value=None,
         step=1,
-        key="new_   hcp_adoption_ladder",
+        key="new_hcp_adoption_ladder",
     )
 
-    st.markdown(section_label)
-    six_months_section = st.number_input(
-        label="Number of babies seen in 0 - 6 Months*",
-        value=None,
-        step=1,
-        key="new_hcp_six_months_section",
-    )
+    with st.expander("SECTION: REACH", icon=":material/view_cozy:", expanded=True):
+        st.markdown(section_label)
+        six_months_section = st.number_input(
+            label="Number of babies seen in 0 - 6 Months",
+            value=None,
+            step=1,
+            key="new_hcp_six_months_section",
+        )
 
-    one_year_section = st.number_input(
-        label="Number of babies seen in 6 months - 1 Year*",
-        value=None,
-        step=1,
-        key="new_hcp_one_year_section",
-    )
+        one_year_section = st.number_input(
+            label="Number of babies seen in 6 months - 1 Year",
+            value=None,
+            step=1,
+            key="new_hcp_one_year_section",
+        )
 
-    three_years_section = st.number_input(
-        label="Number of babies seen in 1 - 3 Years*",
-        value=None,
-        step=1,
-        key="new_hcp_three_years_section",
-    )
+        three_years_section = st.number_input(
+            label="Number of babies seen in 1 - 3 Years",
+            value=None,
+            step=1,
+            key="new_hcp_three_years_section",
+        )
 
-    st.markdown(
-        potentiality_label,
-        unsafe_allow_html=True,
-    )
+        st.markdown(
+            potentiality_label,
+            unsafe_allow_html=True,
+        )
 
-    potentiality = st.selectbox(
-        "Choose *",
-        options=["High", "Moderate", "Low"],
-        index=None,
-        key="new_hcp_potentiality",
-    )
+        potentiality = st.selectbox(
+            "Choose potentiality",
+            options=["High", "Moderate", "Low"],
+            index=None,
+            key="new_hcp_potentiality",
+        )
 
     level_of_influence = st.selectbox(
         "Level of Influence*",
@@ -414,19 +415,19 @@ def hcp_form_new_client():
             and postal_area
             and state
             and client_name
+            and cadre
+            and department
+            and prefix
             and workplace_type
             and line_address
             and colour_codes
             and adoption_ladder
-            and six_months_section
-            and one_year_section
-            and three_years_section
-            and potentiality
             and level_of_influence
             and cycle_goals
             and product_px_reco
         ):
             message_placeholder.error("Ensure all mandatory fields are filled.")
+            st.stop()
 
         # Convert inputs to lowercase for case-insensitive comparison
         workplace_lower = workplace.lower().strip()
@@ -444,16 +445,19 @@ def hcp_form_new_client():
             live_clients_data["Workplace"].str.lower().str.strip() == workplace_lower
         ).any():
             message_placeholder.warning("A workplace with this name already exists.")
+            st.stop()
         elif (
             live_clients_data["Line_Address"].str.lower().str.strip()
             == line_address_lower
         ).any():
             message_placeholder.warning("An address with this name already exists.")
+            st.stop()
         elif (
             live_clients_data["Client_Name"].str.lower().str.strip()
             == client_name_lower
         ).any():
             message_placeholder.warning("A client with this name already exists.")
+            st.stop()
 
         else:
             # Show spinner in the new location
@@ -466,17 +470,14 @@ def hcp_form_new_client():
                     new_client_id = generate_client_id(conn)
 
                     products_str = ", ".join(product_px_reco)
-                    client_name = client_name.title()
-                    cadre = cadre.title()
-                    workplace = workplace.title()
-                    workplace_type = workplace_type.title()
-                    department = department.title()
-                    line_address = line_address.title()
-                    city = city.title()
-                    postal_area = postal_area.title()
-                    state = state.title()
-                    colour_codes = colour_codes.title()
-                    prefix = prefix.title()
+
+                    # Normalize string inputs to title case
+                    client_name = client_name.strip().title()
+                    workplace = workplace.strip().title()
+                    line_address = line_address.strip().title()
+                    city = city.strip().title()
+                    postal_area = postal_area.strip().title()
+                    state = state.strip().title()
 
                     data = pd.DataFrame(
                         [
@@ -522,5 +523,5 @@ def hcp_form_new_client():
                 f"Client Details successfully submitted! Client ID: {new_client_id}",
                 icon=":material/thumb_up:",
             )
-
+            
             st.cache_data.clear()

@@ -22,14 +22,14 @@ def current_time():
 
 def get_current_month_details():
     current_date = current_time()
-    current_month = current_date.strftime("%B")  # Full month name
+    current_month = current_date.strftime("%b")  # month name(first 3 letters)
     current_week = (current_date.day - 1) // 7 + 1  # Calculate week of month
     current_day = current_date.strftime("%A")  # Full day name
     return current_month, current_week, current_day
 
 
 def get_month_options():
-    return [datetime(2024, m, 1).strftime("%B") for m in range(1, 13)]
+    return [datetime(2024, m, 1).strftime("%b") for m in range(1, 13)]
 
 
 def get_week_of_month():
@@ -158,14 +158,7 @@ def new_route_planner():
         key="route_plan_day",
     )
 
-    # month = st.selectbox(
-    #     label="Month*", options=MONTHS, index=None, key="route_plan_month"
-    # )
-    # week = st.number_input(
-    #     label="Week*", min_value=1, max_value=5, step=1, key="route_plan_week"
-    # )
-    # day = st.selectbox(label="Day*", options=DAYS, index=None, key="route_plan_day")
-    date = st.date_input(label="Select Route Plan Date")
+    date = st.date_input(label="Pick a Date*")
     # Get agent names and their territories
     agent_territories = get_agent_names(users)
 
@@ -190,14 +183,14 @@ def new_route_planner():
     )
 
     selected_address = st.selectbox(
-        label="Select Client Address",
+        label="Select Client Address*",
         options=cached_data.keys() if cached_data else [],
         placeholder="select address",
         key="route_plan_clientaddressselectedaddress",
     )
 
     selected_workplace = st.selectbox(
-        label="Select Client Workplace",
+        label="Select Client Workplace*",
         options=(
             sorted(cached_data[selected_address].keys())
             if selected_address and selected_address in cached_data
@@ -208,7 +201,7 @@ def new_route_planner():
     )
 
     selected_client = st.multiselect(
-        label="Select Client Name",
+        label="Select Client Name*",
         options=(
             sorted(cached_data[selected_address][selected_workplace])
             if selected_address
@@ -245,6 +238,7 @@ def new_route_planner():
             and selected_client
         ):
             message_placeholder.warning("Ensure all mandatory fields are filled.")
+            st.stop()
         else:
             # Show spinner in the new location
             with spinner_placeholder:

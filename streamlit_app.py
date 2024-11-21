@@ -109,6 +109,17 @@ if st.session_state["authentication_status"]:
     # ---------SIDEBAR-------------------------------------------------------------------------------------
 
     with st.sidebar.container(key="my_territoryid_container"):
+        st.markdown(
+            """
+       <style>
+       [data-testid="stSidebar"][aria-expanded="true"]{
+           min-width: 244px;
+           max-width: 244px;
+       }
+       """,
+            unsafe_allow_html=True,
+        )
+
         primary_color = st.get_option("theme.primaryColor")
         username = st.session_state["username"]
         user_credentials = credentials["usernames"][username]
@@ -165,5 +176,3 @@ elif st.session_state["authentication_status"] is False:
 elif st.session_state["authentication_status"] is None:
     with col2:
         st.info("Please enter your username and password")
-
-

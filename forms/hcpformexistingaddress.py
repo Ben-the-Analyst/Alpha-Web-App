@@ -49,7 +49,7 @@ def fetch_data():
     institution_types = conn.read(worksheet="Type")
     institutions_department = conn.read(worksheet="Department")
     cycle_goals = conn.read(worksheet="Cycle_Goals")
-    product_px_reco = conn.read(worksheet="Products")
+    product_px_reco = conn.read(worksheet="Competitors")
     return (
         clients_list_data,
         existing_pending_clients_data,
@@ -200,7 +200,7 @@ def hcp_form_existing_address():
     TYPE = institution_types["Type"].unique().tolist()
     DEPARTMENT = institutions_department["Department"].unique().tolist()
     GOALS = cycle_goals["Cycle_Goals"].unique().tolist()
-    PRODUCTS = product_px_reco["Products"].unique().tolist()
+    PRODUCTS = product_px_reco["Competitors"].unique().tolist()
 
     # Sorted lists
     PREFIXES = sorted(PREFIXES)
@@ -232,7 +232,6 @@ def hcp_form_existing_address():
     """
 
     section_label = """
-    ### Section: Reach
     For the next 3 Questions, input estimates as numbers.
     """
 
@@ -341,39 +340,40 @@ def hcp_form_existing_address():
         key="hcp_adoption_ladder",
     )
 
-    st.markdown(section_label)
-    six_months_section = st.number_input(
-        label="Number of babies seen in 0 - 6 Months*",
-        value=None,
-        step=1,
-        key="hcp_six_months_section",
-    )
+    with st.expander("SECTION: REACH", icon=":material/view_cozy:", expanded=True):
+        st.markdown(section_label)
+        six_months_section = st.number_input(
+            label="Number of babies seen in 0 - 6 Months",
+            value=None,
+            step=1,
+            key="hcp_six_months_section",
+        )
 
-    one_year_section = st.number_input(
-        label="Number of babies seen in 6 months - 1 Year*",
-        value=None,
-        step=1,
-        key="hcp_one_year_section",
-    )
+        one_year_section = st.number_input(
+            label="Number of babies seen in 6 months - 1 Year",
+            value=None,
+            step=1,
+            key="hcp_one_year_section",
+        )
 
-    three_years_section = st.number_input(
-        label="Number of babies seen in 1 - 3 Years*",
-        value=None,
-        step=1,
-        key="hcp_three_years_section",
-    )
+        three_years_section = st.number_input(
+            label="Number of babies seen in 1 - 3 Years",
+            value=None,
+            step=1,
+            key="hcp_three_years_section",
+        )
 
-    st.markdown(
-        potentiality_label,
-        unsafe_allow_html=True,
-    )
+        st.markdown(
+            potentiality_label,
+            unsafe_allow_html=True,
+        )
 
-    potentiality = st.selectbox(
-        "Choose *",
-        options=["High", "Moderate", "Low"],
-        index=None,
-        key="hcp_potentiality",
-    )
+        potentiality = st.selectbox(
+            "Choose Potentiality",
+            options=["High", "Moderate", "Low"],
+            index=None,
+            key="hcp_potentiality",
+        )
 
     level_of_influence = st.selectbox(
         "Level of Influence*",
@@ -409,15 +409,12 @@ def hcp_form_existing_address():
             and client_name
             and colour_codes
             and adoption_ladder
-            and six_months_section
-            and one_year_section
-            and three_years_section
-            and potentiality
             and level_of_influence
             and cycle_goals
             and product_px_reco
         ):
             message_placeholder.warning("Ensure all mandatory fields are filled.")
+            st.stop()
 
         # Get fresh data from database for validation
         conn = st.connection("gsheets", type=GSheetsConnection)
@@ -435,12 +432,14 @@ def hcp_form_existing_address():
             live_clients_data["Workplace"].str.lower().str.strip() == workplace_lower
         ).any():
             message_placeholder.warning("A workplace with this name already exists.")
+            st.stop()
 
         elif (
             live_clients_data["Client_Name"].str.lower().str.strip()
             == client_name_lower
         ).any():
             message_placeholder.warning("A client with this name already exists.")
+            st.stop()
 
         else:
             # Show spinner in the new location
