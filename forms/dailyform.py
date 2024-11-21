@@ -233,58 +233,142 @@ def daily_reporting_form():
         label="Next Appointment*", format="DD/MM/YYYY", key="daily_rpt_appointment"
     )
 
-    # Separate SOH section
-    with st.expander("SOH", icon=":material/shelves:", expanded=True):
-        soh_products = st.multiselect(
-            label="Select SOH Products",
-            options=["A1", "A2"],
-            key="soh_products",
+    # __________---------------------------------------------------------------------------------------------------
+
+    # Update the SOS section to allow array input
+    with st.expander("SOS *", icon=":material/shelves:", expanded=True):
+        report_type = st.selectbox(
+            label="Select Type *",
+            options=["Input", "Calculation"],  # Changed options
+            key="report_type_selection_new",
+            index=None,
         )
-        soh_input = st.text_input(label="Enter SOH (e.g., 10 10)", key="soh_value")
 
-    # Separate SOS section
-    with st.expander("SOS", icon=":material/shelf_position:", expanded=True):
-        sos_products = st.multiselect(
-            label="Select SOS Products",
-            options=["A1", "A2"],
-            key="sos_products",
-        )
-        facings = st.text_input(label="Enter Facings (e.g., 5 10)", key="sos_facings")
-        depth = st.text_input(label="Enter Depth (e.g., 2 3)", key="sos_depth")
+        products = []
 
-    # Function to merge SOH inputs
-    def merge_soh_inputs(products, soh_input=None):
+        if report_type == "Input":
+            products = st.multiselect(
+                label="Select Products",
+                options=[
+                    "A1",
+                    "A2",
+                ],
+                key="input_products_new",  # Changed key
+            )
+            soh_input = st.text_input(
+                label="Enter Input (e.g., 10 10)",
+                key="input_value_new",  # Changed label and key
+            )
+
+        elif report_type == "Calculation":
+            products = st.multiselect(
+                label="Select Products",
+                options=[
+                    "A1",
+                    "A2",
+                ],
+                key="calculation_products_new",  # Changed key
+            )
+            facings = st.text_input(
+                label="Enter Facings (e.g., 5 10)",
+                key="calculation_facings_new",  # Changed key
+            )
+            depth = st.text_input(
+                label="Enter Depth (e.g., 2 3)", key="calculation_depth_new"
+            )  # Changed key
+
+    # Function to merge products with Input/Calculation inputs
+    def merge_product_inputs(
+        products, input_value=None, facings=None, depth=None
+    ):  # Changed parameter name
         result = []
-        if soh_input:
-            soh_values = soh_input.split()
-            for product, value in zip(products, soh_values):
-                result.append(f"{product}({value})")
-        return " ".join(result)
-
-    # Function to merge SOS inputs
-    def merge_sos_inputs(products, facings=None, depth=None):
-        result = []
-        if facings and depth:
+        if report_type == "Input" and input_value:
+            input_values = input_value.split()  # Changed variable name
+            for product, value in zip(products, input_values):
+                result.append(f"({product}: {value})")
+        elif report_type == "Calculation" and facings and depth:
             facings_values = list(map(int, facings.split()))
             depth_values = list(map(int, depth.split()))
             for product, facings_value, depth_value in zip(
                 products, facings_values, depth_values
             ):
-                result.append(
-                    f"{product}(F;{facings_value} D;{depth_value})"
-                )  # Changed format to F;value D;value
+                sos_value = facings_value * depth_value
+                result.append(f"({product}: {sos_value})")
         return " ".join(result)
 
-    # Capture the data from SOH and SOS
-    soh = merge_soh_inputs(soh_products, soh_input)
-    sos = merge_sos_inputs(sos_products, facings, depth)
+    # Capture the data from either Input or Calculation
+    sos = merge_product_inputs(  # Changed variable name
+        products,
+        soh_input if report_type == "Input" else None,
+        facings if report_type == "Calculation" else None,
+        depth if report_type == "Calculation" else None,
+    )
 
-    # # Debugging button to display the submitted data
-    if st.button("Debug Submitted Data", key="debug_button"):
-        st.write("SOH/SOS Data Submitted:")
-        st.write(soh)
-        st.write(sos)
+    # # Add a debug button to display the submitted data
+    # if st.button("Debug Submitted Data", key="debug_buttonnew"):
+    #     st.write("Input/Calculation Data Submitted:")
+    #     st.write(sos)  # Display the captured data
 
+    # Separate SOH section
+    with st.expander(
+        "SOH", icon=":material/shelf_position:", expanded=True
+    ):  # Changed title to SOH
+        sos_products = products
+        competitors = st.multiselect(
+            "Competitors", options=COMPETITORS, key="daily_rpt_competitors"
+        )
+        competitors_sos = st.text_input(
+            label="Enter Competitors SOS (e.g., 2 3)", key="sos_depth"
+        )  # Updated label
+
+    # Function to merge SOH inputs
+    def merge_soh_inputs(products, sos, competitors_sos):
+        result = []
+        if competitors_sos:  # Check if competitors SOS is provided
+            competitors_values = list(
+                map(int, competitors_sos.split())
+            )  # Convert input to list of integers
+            total_sos = sum(competitors_values)
+
+            # Check if sos is not empty and contains valid entries
+            if sos:
+                # Extract product and value pairs from sos
+                sos_values = []
+                for entry in sos.split(")"):
+                    if ":" in entry:  # Ensure the entry contains a colon
+                        product_info = entry.strip(
+                            " ()"
+                        )  # Remove surrounding spaces and parentheses
+                        product, value = product_info.split(":")
+                        sos_values.append(
+                            int(value.strip())
+                        )  # Convert value to int after stripping spaces
+
+                total_sos += sum(sos_values)  # Add valid sos values to total
+
+            for product, value in zip(products, competitors_values):
+                product_sos = int(value)  # Get the SOS for the product
+                soh_percentage = (
+                    (product_sos / total_sos) * 100 if total_sos > 0 else 0
+                )  # Calculate percentage
+                result.append(
+                    f"{product}({soh_percentage:.1f}%)"
+                )  # Format to 1 decimal place
+        return " ".join(result)
+
+    # Capture the data from either Input or Calculation
+    soh = merge_soh_inputs(  # Changed variable name
+        sos_products,
+        sos,  # Pass the existing sos variable
+        competitors_sos if competitors else None,  # Pass competitors SOS if available
+    )
+
+    # # Add a debug button to display the submitted data
+    # if st.button("Debug SOH Data", key="debug_button_soh"):  # Changed key
+    #     st.write("SOH Data Submitted:")
+    #     st.write(soh)  # Display the captured data
+
+    # -------------------------------------------------------------------------------------------------------------------
     deal_size = st.number_input(
         label="Deal Size(LPO) i.e. Number of tins",
         min_value=0,
@@ -293,9 +377,6 @@ def daily_reporting_form():
         key="deal_size",
     )
 
-    competitors = st.multiselect(
-        "Competitors", options=COMPETITORS, key="daily_rpt_competitors"
-    )
     competition_updates = st.text_input(
         label="Competition Remarks (e.g., Out of Stock, Promotion, Pricing Change, etc.)",
         key="competition_updates",
