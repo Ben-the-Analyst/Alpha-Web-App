@@ -287,7 +287,7 @@ with tab[1]:
 
             # Expander for Action
             with st.expander("Action", expanded=True, icon=":material/ads_click:"):
-                col1, col2, col3 = st.columns([1.5, 1.5, 1], gap="small")
+                col1, col3 = st.columns([1.5, 1], gap="small")
                 with col1:
 
                     @st.dialog("Daily Activity Form")
