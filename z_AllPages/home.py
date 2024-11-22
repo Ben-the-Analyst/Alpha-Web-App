@@ -536,4 +536,4 @@ with tab[2]:
                     caption="No data available. Please add to view.",
                 )
         else:
-            st.dataframe(display_hcp_data, hide_index=True)
+            st.dataframe(display_hcp_data, height=1000, hide_index=True)
