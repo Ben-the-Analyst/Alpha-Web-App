@@ -274,7 +274,8 @@ def daily_reporting_form():
                 key="calculation_facings_new",  # Changed key
             )
             depth = st.text_input(
-                label="Depth (e.g., 2 3) - Separate with space", key="calculation_depth_new"
+                label="Depth (e.g., 2 3) - Separate with space",
+                key="calculation_depth_new",
             )  # Changed key
 
     # Function to merge products with Input/Calculation inputs
@@ -443,10 +444,10 @@ def daily_reporting_form():
                                 "Outcome": outcomes,
                                 "Future_Task_Objective": future_objective,
                                 "Next_Appointment": appointment.strftime("%d-%m-%Y"),
-                                "SOH": soh,
                                 "SOS": sos,
-                                "Deal Size(LPO)": deal_size,
                                 "Competitors": competitors_names_str,
+                                "SOH": soh,
+                                "Deal Size(LPO)": deal_size,
                                 "Competitors Updates": competition_updates,
                             }
                         ]

@@ -261,14 +261,14 @@ def hcp_form_existing_workplace():
     )
 
     selected_address = st.selectbox(
-        label="Select Client Address",
+        label="Select Client Address *",
         options=cached_data.keys() if cached_data else [],
         placeholder="select address",
         key="healthcare_provider_client_address",
     )
 
     selected_workplace = st.selectbox(
-        label="Select Client Workplace",
+        label="Select Client Workplace *",
         options=(
             sorted(cached_data[selected_address].keys())
             if selected_address and selected_address in cached_data
@@ -279,7 +279,7 @@ def hcp_form_existing_workplace():
     )
 
     department = st.selectbox(
-        label="Department",
+        label="Department *",
         options=DEPARTMENT,
         key="healthcare_provider_dept",
         index=None,
@@ -288,24 +288,36 @@ def hcp_form_existing_workplace():
     prefix = st.selectbox(
         label="Prefix",
         options=PREFIXES,
-        key="healthcare_provider_prefix",
+        key="healthcare_provider_prefix *",
         index=None,
     )
 
-    client_name = st.text_input(
-        label="Client Name. eg; John Doe",
-        key="healthcare_provider_client_name",
+    first_name = st.text_input(
+        label="Client First Name *",
+        placeholder="e.g. John",
+        key="hcp_input_first_name",
     )
 
+    surname = st.text_input(
+        label="Client Surname *",
+        placeholder="e.g. Doe",
+        key="hcp_input_surname",
+    )
+
+    surname = surname.title()
+    first_name = first_name.title()
+    # Combine first name and surname to create client_name
+    client_name = f"{surname} {first_name}".strip()
+
     cadre = st.selectbox(
-        label="Cadre",
+        label="Cadre  *",
         options=CADRE,
         key="healthcare_provider_cadre",
         index=None,
     )
 
     colour_codes = st.selectbox(
-        "Colour CODE*",
+        "Colour CODE *",
         options=COLORCODES,
         index=None,
         key="healthcare_provider_color_codes",
@@ -317,7 +329,7 @@ def hcp_form_existing_workplace():
     )
 
     adoption_ladder = st.number_input(
-        label="Pick a number between 0 and 10*",
+        label="Pick a number between 0 and 10 *",
         min_value=0,
         max_value=10,
         value=None,
@@ -395,7 +407,8 @@ def hcp_form_existing_workplace():
             and selected_workplace
             and department
             and prefix
-            and client_name
+            and first_name
+            and surname
             and colour_codes
             and adoption_ladder
             and level_of_influence
@@ -441,7 +454,7 @@ def hcp_form_existing_workplace():
                                 "TimeStamp": submission_time.strftime(
                                     "%d-%m-%Y  %H:%M:%S"
                                 ),
-                                "Agent": selected_agent,
+                                # "Agent": selected_agent,
                                 "Territory": selected_territory,
                                 "Client_ID": new_client_id,
                                 "Prefix": prefix,

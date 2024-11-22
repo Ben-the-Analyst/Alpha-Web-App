@@ -259,7 +259,7 @@ def hcp_form_existing_address():
     )
 
     selected_address = st.selectbox(
-        label="Select Client Address",
+        label="Select Client Address *",
         options=cached_data.keys() if cached_data else [],
         placeholder="select address",
         key="hcp_clientaddressselectedaddress",
@@ -290,37 +290,50 @@ def hcp_form_existing_address():
             )
 
     selected_workplace = st.text_input(
-        label="Workplace (Clinic Name, Hospital Name, Pharmacy Name, etc.)",
+        label="Workplace * (Clinic Name, Hospital Name, Pharmacy Name, etc.)",
         placeholder="e.g. Kenyatta National Hospital",
         key="hcp_clients_workplace",
     )
 
-    # department = st.selectbox(
-    #     label="Department",
-    #     options=DEPARTMENT,
-    #     key="hcp_department",
-    #     index=None,
-    # )
+    selected_workplace = selected_workplace.title()
 
-    # prefix = st.selectbox(
-    #     label="Prefix",
-    #     options=PREFIXES,
-    #     key="hcp_prefix",
-    #     index=None,
-    # )
-
-    client_name = st.text_input(
-        label="Client Name (Repeat workplace name)",
-        placeholder="e.g. Kenyatta National Hospital",
-        key="hcp_inputclient",
+    department = st.selectbox(
+        label="Department *",
+        options=DEPARTMENT,
+        key="hcp_department",
+        index=None,
     )
 
-    # cadre = st.selectbox(
-    #     label="Cadre",
-    #     options=CADRE,
-    #     key="hcp_cadre",
-    #     index=None,
-    # )
+    prefix = st.selectbox(
+        label="Prefix *",
+        options=PREFIXES,
+        key="hcp_prefix",
+        index=None,
+    )
+
+    first_name = st.text_input(
+        label="Client First Name *",
+        placeholder="e.g. John",
+        key="hcp_input_first_name",
+    )
+
+    surname = st.text_input(
+        label="Client Surname *",
+        placeholder="e.g. Doe",
+        key="hcp_input_surname",
+    )
+
+    surname = surname.title()
+    first_name = first_name.title()
+    # Combine first name and surname to create client_name
+    client_name = f"{surname} {first_name}".strip()
+
+    cadre = st.selectbox(
+        label="Cadre *",
+        options=CADRE,
+        key="hcp_cadre",
+        index=None,
+    )
 
     colour_codes = st.selectbox(
         "Colour CODE*", options=COLORCODES, index=None, key="hcp_colour_codes"
@@ -332,7 +345,7 @@ def hcp_form_existing_address():
     )
 
     adoption_ladder = st.number_input(
-        label="Pick a number between 0 and 10*",
+        label="Pick a number between 0 and 10 *",
         min_value=0,
         max_value=10,
         value=None,
@@ -406,7 +419,10 @@ def hcp_form_existing_address():
             selected_agent
             and selected_address
             and selected_workplace
-            and client_name
+            and department
+            and prefix
+            and surname
+            and first_name
             and colour_codes
             and adoption_ladder
             and level_of_influence
@@ -455,7 +471,6 @@ def hcp_form_existing_address():
                     workplace_key = f"{selected_address}_{selected_workplace}"
                     workplace_info = address_details.get(selected_address, {})
                     products_str = ", ".join(product_px_reco)
-                    client_name = client_name.title()
 
                     data = pd.DataFrame(
                         [
@@ -463,12 +478,12 @@ def hcp_form_existing_address():
                                 "TimeStamp": submission_time.strftime(
                                     "%d-%m-%Y  %H:%M:%S"
                                 ),
-                                "Agent": selected_agent,
+                                # "Agent": selected_agent,
                                 "Territory": selected_territory,
                                 "Client_ID": new_client_id,
-                                # "Prefix": prefix,
+                                "Prefix": prefix,
                                 "Client_Name": client_name,
-                                # "Cadre": cadre,
+                                "Cadre": cadre,
                                 "Workplace": selected_workplace,
                                 "Workplace_Type": workplace_info.get(
                                     "Workplace_Type", ""
@@ -476,7 +491,7 @@ def hcp_form_existing_address():
                                 "City": workplace_info.get("City", ""),
                                 "Postal_Area": workplace_info.get("Postal_Area", ""),
                                 "State": workplace_info.get("State", ""),
-                                # "Department": department,
+                                "Department": department,
                                 "Line_Address": selected_address,
                                 "Colour CODE": colour_codes,
                                 "Adoption Ladder": adoption_ladder,

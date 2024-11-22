@@ -518,7 +518,6 @@ with tab[2]:
                             "Workplace_Type",
                             "State",
                             "TimeStamp",
-                            "Agent",
                         ]
                     )  # Drop Territory column for non-admin users
             else:

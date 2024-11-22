@@ -265,11 +265,22 @@ def hcp_form_new_client():
         index=None,
     )
 
-    client_name = st.text_input(
-        label="HCP/Client/Retailer Name: (Firstname Surname)*",
-        key="new_hcp_client_name",
-        placeholder="e.g. John Doe",
+    first_name = st.text_input(
+        label="Client First Name *",
+        placeholder="e.g. John",
+        key="hcp_input_first_name",
     )
+
+    surname = st.text_input(
+        label="Client Surname *",
+        placeholder="e.g. Doe",
+        key="hcp_input_surname",
+    )
+
+    surname = surname.title()
+    first_name = first_name.title()
+    # Combine first name and surname to create client_name
+    client_name = f"{surname} {first_name}".strip()
 
     cadre = st.selectbox(
         label="Cadre",
@@ -414,7 +425,8 @@ def hcp_form_new_client():
             and city
             and postal_area
             and state
-            and client_name
+            and first_name
+            and surname
             and cadre
             and department
             and prefix
@@ -485,7 +497,7 @@ def hcp_form_new_client():
                                 "TimeStamp": submission_time.strftime(
                                     "%d-%m-%Y  %H:%M:%S"
                                 ),
-                                "Agent": selected_agent,
+                                # "Agent": selected_agent,
                                 "Territory": selected_territory,
                                 "Client_ID": new_client_id,
                                 "Prefix": prefix,
@@ -523,5 +535,5 @@ def hcp_form_new_client():
                 f"Client Details successfully submitted! Client ID: {new_client_id}",
                 icon=":material/thumb_up:",
             )
-            
+
             st.cache_data.clear()
