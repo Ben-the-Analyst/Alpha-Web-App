@@ -84,7 +84,7 @@ with tab[0]:
 
         with col1:
             # Expander for Action
-            with st.expander("Action", expanded=False, icon=":material/ads_click:"):
+            with st.expander("Action", expanded=True, icon=":material/ads_click:"):
                 col1, col2, col3 = st.columns([2, 0.5, 1], gap="small")
 
                 # Add Route Planner Button
@@ -107,7 +107,7 @@ with tab[0]:
                 # Refresh Button
                 with col3:
                     if st.button(
-                        "Refresh",
+                        "",
                         help="Reload the data and clear cache.",
                         type="secondary",
                         icon=":material/refresh:",
@@ -237,6 +237,7 @@ with tab[0]:
                     "assets/images/alert.png",
                     # caption="No data available after applying the selected filter.",
                 )
+                st.markdown(":material/Settings:")
         else:
             st.dataframe(display_data, hide_index=True)
 
@@ -267,9 +268,26 @@ with tab[1]:
         col1, dailyFilterCol = st.columns([2, 1], gap="large")
 
         with col1:
+
+            @st.dialog("Outcome Explanations")
+            def show_outcomes():
+                st.write("Explore the various outcomes and their explanations below:")
+
+                for outcome, explanation in data.items():
+                    st.markdown(f"- **{outcome}**: {explanation}")
+
+            if st.button(
+                "View Outcomes",
+                icon=":material/info:",
+                key="outcomes_button",
+                help="Click to view outcomes",
+                use_container_width=True,
+            ):
+                show_outcomes()
+
             # Expander for Action
-            with st.expander("Action", expanded=False, icon=":material/ads_click:"):
-                col1, col2, col3, col4 = st.columns([1, 0.1, 1, 1], gap="small")
+            with st.expander("Action", expanded=True, icon=":material/ads_click:"):
+                col1, col2, col3 = st.columns([1.5, 1.5, 1], gap="small")
                 with col1:
 
                     @st.dialog("Daily Activity Form")
@@ -277,11 +295,11 @@ with tab[1]:
                         daily_reporting_form()
 
                     if st.button(
-                        "Add ",
+                        "Client Report",
                         help="Click to add activity",
                         type="primary",
-                        icon=":material/library_add:",
-                        key="add_daily_form_button",
+                        icon=":material/group_add:",
+                        key="add_daily_client_report_form_button",
                         use_container_width=True,
                     ):
 
@@ -289,17 +307,25 @@ with tab[1]:
 
                 # with col2:
 
-                #     st.button(
-                #         "Filters",
-                #         help="Click to filter data",
-                #         type="secondary",
-                #         icon=":material/tune:",
-                #         key="filter_daily_form_button",
-                #     )
+                #     @st.dialog("Daily Activity Form")
+                #     def show_daily_form():
+                #         daily_reporting_form()
+
+                #     if st.button(
+                #         "Institution Report",
+                #         help="Click to add activity",
+                #         type="primary",
+                #         icon=":material/add_home_work:",
+                #         key="add_daily_institution_Report_form_button",
+                #         use_container_width=True,
+                #     ):
+
+                #         show_daily_form()
+
                 with col3:
                     # Refresh Button
                     if st.button(
-                        "refresh",
+                        "",
                         help="Click to Refresh Data",
                         type="secondary",
                         icon=":material/refresh:",
@@ -308,26 +334,6 @@ with tab[1]:
                     ):
                         st.cache_data.clear()  # Clear the cache
                         st.toast("Cache cleared. Reloading data...", icon="✅")
-
-                with col4:
-
-                    @st.dialog("Outcome Explanations")
-                    def show_outcomes():
-                        st.write(
-                            "Explore the various outcomes and their explanations below:"
-                        )
-
-                        for outcome, explanation in data.items():
-                            st.markdown(f"- **{outcome}**: {explanation}")
-
-                    if st.button(
-                        "outcomes",
-                        icon=":material/info:",
-                        key="outcomes_button",
-                        help="Click to view outcomes",
-                        use_container_width=True,
-                    ):
-                        show_outcomes()
 
     # Create empty container for dynamic table
     daily_table_container = st.empty()
@@ -399,7 +405,7 @@ with tab[1]:
 # --------------------HCP / RETAILERS TAB----------------------------------------------------------------
 with tab[2]:
     # Expander for Action
-    with st.expander("Action", expanded=False, icon=":material/ads_click:"):
+    with st.expander("Action", expanded=True, icon=":material/ads_click:"):
         with st.container():
             col1, col2, col3, col4 = st.columns([1, 1, 1, 0.4], gap="small")
             with col1:
@@ -453,7 +459,7 @@ with tab[2]:
 
             with col4:
                 if st.button(
-                    "Refresh",
+                    "",
                     help="Click to Refresh Data",
                     type="secondary",
                     icon=":material/refresh:",
@@ -536,4 +542,4 @@ with tab[2]:
                     caption="No data available. Please add to view.",
                 )
         else:
-            st.dataframe(display_hcp_data, height=1000, hide_index=True)
+            st.dataframe(display_hcp_data, height=600, hide_index=True)

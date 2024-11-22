@@ -45,7 +45,7 @@
 .st-key-refresh_hcp_form button,
 .st-key-add_hcp_form_existing_button button,
 .st-key-add_hcp_form_existing_address_button button {
-    border-radius: 100px;
+    /* border-radius: 100px; */
     /* min-width: 100px; */
 }
 

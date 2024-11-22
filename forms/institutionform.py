@@ -233,6 +233,193 @@ def daily_reporting_form():
         label="Next Appointment*", format="DD/MM/YYYY", key="daily_rpt_appointment"
     )
 
+    # __________---------------------------------------------------------------------------------------------------
+
+    # Update the SOS section to allow array input
+    with st.expander("SOS *", icon=":material/shelves:", expanded=True):
+        report_type = st.selectbox(
+            label="Select Type *",
+            options=["Input", "Calculation"],  # Changed options
+            key="report_type_selection_new",
+            index=None,
+        )
+
+        products = []
+
+        if report_type == "Input":
+            products = st.multiselect(
+                label="Select Products",
+                options=[
+                    "A1",
+                    "A2",
+                ],
+                key="input_products_new",
+            )
+            soh_input = st.text_input(
+                label="Enter Input (e.g., 10 10)",
+                key="input_value_new",  # Changed label and key
+            )
+
+        elif report_type == "Calculation":
+            products = st.multiselect(
+                label="Select Products",
+                options=[
+                    "A1",
+                    "A2",
+                ],
+                key="calculation_products_new",
+            )
+            facings = st.text_input(
+                label="Facings (e.g., 5 10) - Separate with space",
+                key="calculation_facings_new",
+            )
+            depth = st.text_input(
+                label="Depth (e.g., 2 3) - Separate with space",
+                key="calculation_depth_new",
+            )
+
+    # Function to merge products with Input/Calculation inputs
+    def merge_product_inputs(
+        products, input_value=None, facings=None, depth=None
+    ):  # Changed parameter name
+        result = []
+        if report_type == "Input" and input_value:
+            input_values = input_value.split()  # Changed variable name
+            for product, value in zip(products, input_values):
+                result.append(f"({product}: {value})")
+        elif report_type == "Calculation" and facings and depth:
+            facings_values = list(map(int, facings.split()))
+            depth_values = list(map(int, depth.split()))
+            for product, facings_value, depth_value in zip(
+                products, facings_values, depth_values
+            ):
+                sos_value = facings_value * depth_value
+                result.append(f"({product}: {sos_value})")
+        return " ".join(result)
+
+    # Capture the data from either Input or Calculation
+    sos = merge_product_inputs(  # Changed variable name
+        products,
+        soh_input if report_type == "Input" else None,
+        facings if report_type == "Calculation" else None,
+        depth if report_type == "Calculation" else None,
+    )
+
+    # # Add a debug button to display the submitted data
+    # if st.button("Debug Submitted Data", key="debug_buttonnew"):
+    #     st.write("Input/Calculation Data Submitted:")
+    #     st.write(sos)  # Display the captured data
+
+    #-----------------------------------------------------------------------------------------------------------------------------------
+
+    # Separate SOH section
+    with st.expander(
+        "SOH", icon=":material/shelf_position:", expanded=True
+    ):  # Changed title to SOH
+        sos_products = products
+        competitors = st.multiselect(
+            "Competitors", options=COMPETITORS, key="daily_rpt_competitors"
+        )
+        competitors_sos = st.text_input(
+            label="Competitors SOS (e.g., 2 3) - Separate with space", key="sos_depth"
+        )  # Updated label
+
+    # Function to merge SOH inputs
+    def merge_soh_inputs(products, sos, competitors_sos):
+        result = []
+        total_sos = 0  # Initialize total SOS
+
+        # Check if competitors SOS is provided
+        if competitors_sos:
+            competitors_values = list(
+                map(int, competitors_sos.split())
+            )  # Convert input to list of integers
+            total_sos += sum(competitors_values)  # Add competitors SOS to total
+
+        # Check if sos is not empty and contains valid entries
+        if sos:
+            # Extract product and value pairs from sos
+            sos_values = {}
+            for entry in sos.split(")"):
+                if ":" in entry:  # Ensure the entry contains a colon
+                    product_info = entry.strip(
+                        " ()"
+                    )  # Remove surrounding spaces and parentheses
+                    product, value = product_info.split(":")
+                    sos_values[product.strip()] = int(
+                        value.strip()
+                    )  # Store in dictionary
+
+            total_sos += sum(sos_values.values())  # Add valid sos values to total
+
+            # Calculate SOH percentage for each product
+            for product in products:
+                product_sos = sos_values.get(
+                    product, 0
+                )  # Get the SOS for the product, default to 0
+                soh_percentage = (
+                    (product_sos / total_sos * 100) if total_sos > 0 else 0
+                )  # Calculate percentage
+                result.append(
+                    f"{product}({soh_percentage:.1f}%)"
+                )  # Format to 1 decimal place
+
+        return " ".join(result)
+
+    # Capture the data from either Input or Calculation
+    soh = merge_soh_inputs(  # Changed variable name
+        sos_products,
+        sos,  # Pass the existing sos variable
+        competitors_sos if competitors else None,  # Pass competitors SOS if available
+    )
+
+    # Add a debug button to display the submitted data
+    # if st.button("Debug SOH Data", key="debug_button_soh"):
+    #     st.write("SOH Data Submitted:")
+    #     st.write(soh)
+
+    # -------------------------------------------------------------------------------------------------------------------
+    # Function to format competitors with their associated SOS values
+    def format_competitors_with_sos(competitors, competitors_sos):
+        # Convert space-separated string of sos values into a list of integers
+        competitors_sos_list = list(
+            map(int, competitors_sos.split())
+        )  # Split and convert to integers
+
+        # Create a list to hold the formatted strings
+        formatted_competitors = []
+
+        # Iterate through competitors and their associated sos values
+        for competitor, sos_value in zip(competitors, competitors_sos_list):
+            # Take the first three letters of the competitor's name
+            competitor_short = competitor[:3]
+            # Format the string as "ShortName(SOSValue)"
+            formatted_string = f"{competitor_short}({sos_value})"
+            # Append to the list
+            formatted_competitors.append(formatted_string)
+
+        # Join the formatted strings with a comma and space
+        return ", ".join(formatted_competitors)
+
+    formatted_competitors_sos = format_competitors_with_sos(
+        competitors, competitors_sos
+    )
+
+    # -----------------------------------------------------------------------------------------------------
+
+    deal_size = st.number_input(
+        label="Deal Size(LPO) i.e. Number of tins",
+        min_value=0,
+        value=None,
+        step=1,
+        key="deal_size",
+    )
+
+    competition_updates = st.text_input(
+        label="Competition Remarks (e.g., Out of Stock, Promotion, Pricing Change, etc.)",
+        key="competition_updates",
+    )
+
     st.markdown("**required*")
 
     message_placeholder = st.empty()  # Empty container for success or error messages
@@ -270,6 +457,9 @@ def daily_reporting_form():
                     current_week_val = current_week()
                     current_day_val = today_dayOfweek()
 
+                    # Convert selected_client list to comma-separated string
+                    competitors_names_str = ", ".join(competitors)
+
                     daily_data = pd.DataFrame(
                         [
                             {
@@ -291,6 +481,11 @@ def daily_reporting_form():
                                 "Outcome": outcomes,
                                 "Future_Task_Objective": future_objective,
                                 "Next_Appointment": appointment.strftime("%d-%m-%Y"),
+                                "SOS": sos,
+                                "Competitors SOS": formatted_competitors_sos,
+                                "SOH": soh,
+                                "Deal Size(LPO)": deal_size,
+                                "Competitors Updates": competition_updates,
                             }
                         ]
                     )
