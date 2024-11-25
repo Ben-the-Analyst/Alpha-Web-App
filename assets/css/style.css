@@ -5,16 +5,55 @@
     flex-direction: column;
 }
 
+.st-key-my_header_container {
+    border-radius: 15px;
+    border-top: 2px solid #8e00c6;
+    margin-top: 0px;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    /* background-color: #fadbe6;
+    text-align: end;
+    padding-left: 5px;
+    padding-right: 5px;
+    padding-top: 2px;
+    padding-bottom: 20px; */
+}
+
+@media (max-width: 600px) {
+    .st-key-my_header_container {
+        display: none;
+    }
+
+}
+
+.st-key-my_body_container {
+    border-radius: 10px;
+    border-bottom: 1px solid #8e00c6;
+    padding-top: 0px;
+    padding-bottom: 20px;
+}
+
+.st-key-divider_logout {
+    padding-top: 50px;
+    margin-bottom: 0px !important;
+    padding-bottom: 0px !important;
+}
+
+.st-key-logout_expander {
+    max-width: 100px;
+}
+
 .st-key-my_territoryid_container,
 .st-key-my_territoryid_dashboard_container {
     /* border-radius: 20px;
     border-top: 1px solid #8e00c6;
-    border-top: 1px solid #8e00c6; */
+    border-top: 1px solid #8e00c6;
+    padding-top: 10px; */
     display: flex;
     justify-content: center;
     align-items: center;
     text-align: start;
-    /* padding-top: 10px; */
     padding-bottom: 20px;
     margin-bottom: 50px;
     margin-top: 20px;
@@ -49,6 +88,7 @@
     /* min-width: 100px; */
 }
 
+
 /* Refresh Buttons */
 .st-key-refresh_daily_form button,
 .st-key-refresh_hcp_form button,
@@ -67,4 +107,31 @@
 .st-key-submit_hcp_form button,
 .st-key-submit_route_planner button {
     border-radius: 100px;
+}
+
+
+/* Primary Buttons Class 2 */
+
+.st-key-add_daily_institution_Report_form_button button,
+.st-key-add_hcp_form_existing_button button {
+    background-color: #8e00c6;
+    border: none;
+}
+
+/* Primary Buttons Class 3*/
+
+.st-key-add_hcp_form_existing_address_button button {
+    background-color: green;
+    border: none;
+}
+
+/* BUTTONS HOVER */
+.st-key-add_route_plan_button button:hover,
+.st-key-add_daily_client_report_form_button button:hover,
+.st-key-add_daily_institution_Report_form_button button:hover,
+.st-key-add_hcp_form_existing_address_button button:hover,
+.st-key-add_hcp_form_button button:hover,
+.st-key-add_hcp_form_existing_button button:hover {
+    background-color: #000;
+    border: none;
 }

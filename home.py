@@ -6,6 +6,7 @@ from streamlit_gsheets import GSheetsConnection
 # from forms.routeform import route_planner
 from forms.newrouterform import new_route_planner
 from forms.dailyform import daily_reporting_form
+from forms.institutionform import institution_scorecard_report
 from forms.hcpformexistingworkplace import hcp_form_existing_workplace
 from forms.hcpformexistingaddress import hcp_form_existing_address
 from forms.hcpformnewclient import hcp_form_new_client
@@ -69,6 +70,28 @@ def load_pending_clients_data():
     return conn.read(worksheet="PendingClients")
 
 
+# ----------------------LOADING ICON FOR NO DATA AVAILABLE--------------------------
+@st.cache_data
+def get_icon_html():
+    return """
+    <div style="
+        width: 100%; 
+        height: 200px; 
+        padding-top: 150px;
+        padding-bottom: 100px;
+        display: flex; 
+        justify-content: center; 
+        align-items: center; 
+        background-color:transparent;
+        margin: 0 auto;"> 
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=fmd_bad" />
+        <i class="material-symbols-outlined" style="font-size: 200px; color: rgba(255, 0, 0, 0.6);">fmd_bad</i> 
+    </div>"""
+
+
+icon_html = get_icon_html()
+
+
 # --------TABS FOR DIFFERENT FORMS---------------------------------------------------------------
 
 tab = st.tabs(["Route Planner", "Daily Reporting", "HCP / Retailers"])
@@ -80,12 +103,12 @@ with tab[0]:
     # --------------------ROUTE PLANNER TAB----------------------------------------------------------------
     # Define button container
     with st.container(key="route_buttons_container"):
-        col1, filters = st.columns([1.5, 1], gap="large")
+        col1, filters = st.columns([1.5, 1])
 
         with col1:
             # Expander for Action
             with st.expander("Action", expanded=True, icon=":material/ads_click:"):
-                col1, col2, col3 = st.columns([2, 0.5, 1], gap="small")
+                col1, col2, col3 = st.columns([2, 1, 2], gap="small")
 
                 # Add Route Planner Button
                 with col1:
@@ -105,7 +128,7 @@ with tab[0]:
                         show_route_form()
 
                 # Refresh Button
-                with col3:
+                with col2:
                     if st.button(
                         "",
                         help="Reload the data and clear cache.",
@@ -118,6 +141,10 @@ with tab[0]:
                         st.cache_data.clear()  # Clear cached data
                         Route_data = load_route_data()  # Reload data
                         st.toast("Data refreshed successfully.", icon="✅")
+
+        with filters:
+            with st.expander("Filter By:", expanded=True, icon=":material/filter_alt:"):
+                route_filters_section = st.empty()
 
     # Create empty container for dynamic table
     route_table_container = st.empty()
@@ -140,8 +167,9 @@ with tab[0]:
     ]
 
     # Select box for filters
-    filter_selection = filters.selectbox(
-        "Filters",
+    filter_selection = route_filters_section.selectbox(
+        "Filter by",
+        label_visibility="collapsed",
         options=route_filters,
         index=0,  # Default is "Current Week"
         key="route_filter_select",
@@ -222,24 +250,24 @@ with tab[0]:
             st.exception(e)
             display_data = None
 
-    # Check if data exists after applying the filter
-    if display_data is None or display_data.empty:
-        st.warning(
-            "OOps! No data available for the selected filter. Please try a different filter."
-        )
-
     # Display data or show empty state
     with route_table_container:
         if display_data is None or display_data.empty:
-            _, col, _ = st.columns(3, gap="small")
+            _, col, _ = st.columns([1, 3, 1], gap="small")
             with col:
-                st.image(
-                    "assets/images/alert.png",
-                    # caption="No data available after applying the selected filter.",
+                # st.image(
+                #     "assets/images/alert.png",
+                #     # caption="No data available after applying the selected filter.",
+                # )
+
+                st.markdown(icon_html, unsafe_allow_html=True)
+                st.error(
+                    "Oops! No data available for the selected filter. Please try a different filter.",
+                    icon=":material/info:",
                 )
-                st.markdown(":material/Settings:")
+
         else:
-            st.dataframe(display_data, hide_index=True)
+            st.dataframe(display_data, height=600, hide_index=True)
 
 
 # --------------------DAILY REPORTING TAB----------------------------------------------------------------
@@ -265,29 +293,13 @@ with tab[1]:
     }
 
     with st.container(key="daily_buttons_container"):
-        col1, dailyFilterCol = st.columns([2, 1], gap="large")
+        col1, dailyFilterCol = st.columns([2.5, 1], gap="small")
 
         with col1:
 
-            @st.dialog("Outcome Explanations")
-            def show_outcomes():
-                st.write("Explore the various outcomes and their explanations below:")
-
-                for outcome, explanation in data.items():
-                    st.markdown(f"- **{outcome}**: {explanation}")
-
-            if st.button(
-                "View Outcomes",
-                icon=":material/info:",
-                key="outcomes_button",
-                help="Click to view outcomes",
-                use_container_width=True,
-            ):
-                show_outcomes()
-
             # Expander for Action
             with st.expander("Action", expanded=True, icon=":material/ads_click:"):
-                col1, col3 = st.columns([1.5, 1], gap="small")
+                col1, col2, col3, col4 = st.columns([2, 2, 1, 0.5], gap="small")
                 with col1:
 
                     @st.dialog("Daily Activity Form")
@@ -305,22 +317,22 @@ with tab[1]:
 
                         show_daily_form()
 
-                # with col2:
+                with col2:
 
-                #     @st.dialog("Daily Activity Form")
-                #     def show_daily_form():
-                #         daily_reporting_form()
+                    @st.dialog("Institution's Scorecard Report")
+                    def show_institution_scorecard_report():
+                        institution_scorecard_report()
 
-                #     if st.button(
-                #         "Institution Report",
-                #         help="Click to add activity",
-                #         type="primary",
-                #         icon=":material/add_home_work:",
-                #         key="add_daily_institution_Report_form_button",
-                #         use_container_width=True,
-                #     ):
+                    if st.button(
+                        "Institution Report",
+                        help="Click to add activity",
+                        type="primary",
+                        icon=":material/add_home_work:",
+                        key="add_daily_institution_Report_form_button",
+                        use_container_width=True,
+                    ):
 
-                #         show_daily_form()
+                        show_institution_scorecard_report()
 
                 with col3:
                     # Refresh Button
@@ -334,6 +346,31 @@ with tab[1]:
                     ):
                         st.cache_data.clear()  # Clear the cache
                         st.toast("Cache cleared. Reloading data...", icon="✅")
+
+                with col4:
+
+                    @st.dialog("Outcome Explanations")
+                    def show_outcomes():
+                        st.write(
+                            "Explore the various outcomes and their explanations below:"
+                        )
+
+                        for outcome, explanation in data.items():
+                            st.markdown(f"- **{outcome}**: {explanation}")
+
+                    if st.button(
+                        "",
+                        icon=":material/info:",
+                        key="outcomes_button",
+                        help="Click to view outcomes",
+                        use_container_width=True,
+                    ):
+                        show_outcomes()
+
+        with dailyFilterCol:
+            with st.expander("Filter By:", expanded=True, icon=":material/filter_alt:"):
+
+                filter_section = st.empty()
 
     # Create empty container for dynamic table
     daily_table_container = st.empty()
@@ -350,8 +387,9 @@ with tab[1]:
     )  # Convert to ISO format
 
     # Select box for filters
-    filter_selection = dailyFilterCol.selectbox(
-        "Filters",
+    filter_selection = filter_section.selectbox(
+        "Filter by",
+        label_visibility="collapsed",
         options=route_filters,
         index=0,  # Default is "Current Week"
         key="daily_filter_selection",
@@ -383,23 +421,22 @@ with tab[1]:
             st.exception(e)
             display_daily_data = None
 
-    # Check if data exists after applying the filter
-    if display_daily_data is None or display_daily_data.empty:
-        st.warning(
-            "OOps! No data available for the selected filter. Please try a different filter."
-        )
-
     # Display data or show empty state
     with daily_table_container:
         if display_daily_data is None or display_daily_data.empty:
-            _, col, _ = st.columns(3, gap="small")
+            _, col, _ = st.columns([1, 3, 1], gap="small")
             with col:
-                st.image(
-                    "assets/images/alert.png",
-                    # caption="No data available after applying the selected filter.",
+                # st.image(
+                #     "assets/images/alert.png",
+                #     # caption="No data available after applying the selected filter.",
+                # )
+                st.markdown(icon_html, unsafe_allow_html=True)
+                st.error(
+                    "Oops! No data available for the selected filter. Please try a different filter.",
+                    icon=":material/info:",
                 )
         else:
-            st.dataframe(display_daily_data, hide_index=True)
+            st.dataframe(display_daily_data, height=600, hide_index=True)
 
 
 # --------------------HCP / RETAILERS TAB----------------------------------------------------------------
@@ -535,11 +572,16 @@ with tab[2]:
     # Display data or show empty state
     with hcp_table_container:
         if display_hcp_data is None or display_hcp_data.empty:
-            col1, col2, col3 = st.columns(3, gap="small")
-            with col2:
-                st.image(
-                    "assets/images/alert.png",
-                    caption="No data available. Please add to view.",
+            _, col, _ = st.columns([1, 3, 1], gap="small")
+            with col:
+                # st.image(
+                #     "assets/images/alert.png",
+                #     caption="No data available. Please add to view.",
+                # )
+                st.markdown(icon_html, unsafe_allow_html=True)
+                st.error(
+                    "Oops! No data available for the selected filter. Please try a different filter.",
+                    icon=":material/info:",
                 )
         else:
             st.dataframe(display_hcp_data, height=600, hide_index=True)

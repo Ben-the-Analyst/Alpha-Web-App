@@ -5,18 +5,18 @@ from datetime import datetime
 import time
 import pytz
 
-# # --------------------AUTHENTICATION CHECK---------------------------------------------------------------
-# if not st.session_state.get("authenticated"):
-#     st.error("Please login to access this page")
-#     st.stop()
+# --------------------AUTHENTICATION CHECK---------------------------------------------------------------
+if not st.session_state.get("authenticated"):
+    st.error("Please login to access this page")
+    st.stop()
 
-# # --------------------GET USER SPECIFIC DATA(Signed in user)---------------------------------------------------------------
-# username = st.session_state["username"]
-# user_credentials = st.session_state["user_credentials"]
-# # user_credentials = st.session_state["credentials"]["usernames"][username]
-# user_territory = user_credentials["Territory_ID"]
-# user_role = user_credentials["role"]
-# user_fullname = user_credentials["fullname"]
+# --------------------GET USER SPECIFIC DATA(Signed in user)---------------------------------------------------------------
+username = st.session_state["username"]
+user_credentials = st.session_state["user_credentials"]
+# user_credentials = st.session_state["credentials"]["usernames"][username]
+user_territory = user_credentials["Territory_ID"]
+user_role = user_credentials["role"]
+user_fullname = user_credentials["fullname"]
 
 
 # --------------------LOAD CUSTOM CSS---------------------------------------------------------------
@@ -60,12 +60,18 @@ def fetch_data():
     # Establishing Google Sheets connection--------------------------------
     conn = st.connection("gsheets", type=GSheetsConnection)
     clients_list_data = conn.read(worksheet="ClientsDatabase")
-    existing_daily_data = conn.read(worksheet="DailyReport")
+    existing_institution_data = conn.read(worksheet="InstitutionsReport")
     outcomes = conn.read(worksheet="Outcome")
     users = conn.read(worksheet="Users")
     competitorslist = conn.read(worksheet="Competitors")
 
-    return clients_list_data, existing_daily_data, outcomes, users, competitorslist
+    return (
+        clients_list_data,
+        existing_institution_data,
+        outcomes,
+        users,
+        competitorslist,
+    )
 
 
 # Add new function to get agent names
@@ -129,10 +135,22 @@ def clear_form():
     st.session_state["report_type_selection"] = None
     st.session_state["deal_size"] = 0
     st.session_state["daily_rpt_competitors"] = []
+    st.session_state["report_type_selection_new"] = None
+    st.session_state["sos_depth"] = ""
     st.session_state["competition_updates"] = ""
+    st.session_state["deal_size_a1"] = 0
+    st.session_state["deal_size_a2"] = 0
+    st.session_state["clean_dusted"] = 0
+    st.session_state["no_damaged"] = 0
+    st.session_state["filled_shelf"] = False
+    st.session_state["order_negotiation"] = False
+    st.session_state["price_tag"] = False
+    st.session_state["prod_recv"] = False
+    st.session_state["onshelf_training"] = False
+    st.session_state["goods_returns"] = False
 
 
-def daily_reporting_form():
+def institution_scorecard_report():
     if "show_clear_button" not in st.session_state:
         st.session_state.show_clear_button = False
     f3, f4 = st.columns(2, gap="medium")
@@ -146,12 +164,10 @@ def daily_reporting_form():
         ):
             clear_form()
 
-    clients_list_data, existing_daily_data, outcomes, users, competitorslist = (
+    clients_list_data, existing_institution_data, outcomes, users, competitorslist = (
         fetch_data()
     )
 
-    OUTCOMES = sorted(outcomes["Outcomes"].unique().tolist())
-    PREFIXES = sorted(["Mr.", "Mrs.", "Ms.", "Dr.", "Prof."])
     COMPETITORS = sorted(competitorslist["Competitors"].unique().tolist())
 
     # Get agent names and their territories
@@ -195,53 +211,16 @@ def daily_reporting_form():
         key="daily_rpt_clientselectedworkplace",
     )
 
-    selected_client = st.selectbox(
-        label="Select Client Name*",
-        options=(
-            sorted(cached_data[selected_address][selected_workplace])
-            if selected_address
-            and selected_workplace
-            and selected_address in cached_data
-            and selected_workplace in cached_data[selected_address]
-            else []
-        ),
-        placeholder="select client name",
-        key="daily_rpt_clientselectedclient",
-    )
-
-    prefix = st.selectbox(
-        label="Prefix", options=PREFIXES, index=None, key="daily_rpt_prefix"
-    )
-
-    objective = st.text_input(label="Task Objective*", key="daily_rpt_objective")
-
-    comments = st.text_area(label="Comments/Notes*", key="daily_rpt_comments")
-
-    outcomes = st.selectbox(
-        "Overall Outcome*",
-        options=OUTCOMES,
-        index=None,
-        key="daily_rpt_outcomes",
-        placeholder="Choose most relevant ",
-    )
-
-    future_objective = st.text_area(
-        label="Future Task Objective*", key="daily_rpt_future_objective"
-    )
-
-    appointment = st.date_input(
-        label="Next Appointment*", format="DD/MM/YYYY", key="daily_rpt_appointment"
-    )
-
     # __________---------------------------------------------------------------------------------------------------
 
     # Update the SOS section to allow array input
     with st.expander("SOS *", icon=":material/shelves:", expanded=True):
-        report_type = st.selectbox(
+        report_type = st.radio(
             label="Select Type *",
-            options=["Input", "Calculation"],  # Changed options
-            key="report_type_selection_new",
+            options=["Input", "Calculation"],
             index=None,
+            help="Select Input or Calculation",
+            key="report_type_selection_new",
         )
 
         products = []
@@ -257,7 +236,7 @@ def daily_reporting_form():
             )
             soh_input = st.text_input(
                 label="Enter Input (e.g., 10 10)",
-                key="input_value_new",  # Changed label and key
+                key="input_value_new",
             )
 
         elif report_type == "Calculation":
@@ -277,6 +256,52 @@ def daily_reporting_form():
                 label="Depth (e.g., 2 3) - Separate with space",
                 key="calculation_depth_new",
             )
+
+    # Function to merge products with Input/Calculation inputs
+    def merge_product_inputs(
+        products, input_value=None, facings=None, depth=None
+    ):  # Changed parameter name
+        sos_a1 = 0  # Initialize SOS for A1
+        sos_a2 = 0  # Initialize SOS for A2
+
+        if report_type == "Input" and input_value:
+            input_values = input_value.split()  # Changed variable name
+            for product, value in zip(products, input_values):
+                if product == "A1":
+                    sos_a1 = int(value)  # Capture SOS for A1
+                elif product == "A2":
+                    sos_a2 = int(value)  # Capture SOS for A2
+
+        elif report_type == "Calculation" and facings and depth:
+            facings_values = list(map(int, facings.split()))
+            depth_values = list(map(int, depth.split()))
+            for product, facings_value, depth_value in zip(
+                products, facings_values, depth_values
+            ):
+                sos_value = facings_value * depth_value
+                if product == "A1":
+                    sos_a1 = sos_value  # Capture SOS for A1
+                elif product == "A2":
+                    sos_a2 = sos_value  # Capture SOS for A2
+
+        return sos_a1, sos_a2  # Return separate SOS values
+
+    # Capture the data from either Input or Calculation
+    sos_a1, sos_a2 = merge_product_inputs(  # Changed variable name
+        products,
+        soh_input if report_type == "Input" else None,
+        facings if report_type == "Calculation" else None,
+        depth if report_type == "Calculation" else None,
+    )
+
+    # # # Add a debug button to display the submitted data
+    # if st.button("Debug Submitted Data"):
+    #     st.write("Input/Calculation Data Submitted:")
+    #     st.write(f"A1 SOS: {sos_a1}, A2 SOS: {sos_a2}")
+    #     st.write(sos_a1)
+    #     st.write(sos_a2)
+
+    # .......................................
 
     # Function to merge products with Input/Calculation inputs
     def merge_product_inputs(
@@ -305,12 +330,12 @@ def daily_reporting_form():
         depth if report_type == "Calculation" else None,
     )
 
-    # # Add a debug button to display the submitted data
+    # # # Add a debug button to display the submitted data
     # if st.button("Debug Submitted Data", key="debug_buttonnew"):
     #     st.write("Input/Calculation Data Submitted:")
     #     st.write(sos)  # Display the captured data
 
-    #-----------------------------------------------------------------------------------------------------------------------------------
+    # -----------------------------------------------------------------------------------------------------------------------------------
 
     # Separate SOH section
     with st.expander(
@@ -322,7 +347,11 @@ def daily_reporting_form():
         )
         competitors_sos = st.text_input(
             label="Competitors SOS (e.g., 2 3) - Separate with space", key="sos_depth"
-        )  # Updated label
+        )
+        competition_updates = st.text_input(
+            label="Competition Remarks (e.g., Out of Stock, Promotion, Pricing Change, etc.)",
+            key="competition_updates",
+        )
 
     # Function to merge SOH inputs
     def merge_soh_inputs(products, sos, competitors_sos):
@@ -378,7 +407,7 @@ def daily_reporting_form():
     #     st.write("SOH Data Submitted:")
     #     st.write(soh)
 
-    # -------------------------------------------------------------------------------------------------------------------
+    # ----------------------COMPETITORS SECTION---------------------------------------------------------------------------
     # Function to format competitors with their associated SOS values
     def format_competitors_with_sos(competitors, competitors_sos):
         # Convert space-separated string of sos values into a list of integers
@@ -386,7 +415,7 @@ def daily_reporting_form():
             map(int, competitors_sos.split())
         )  # Split and convert to integers
 
-        # Create a list to hold the formatted strings
+        # Create a dictionary to hold the formatted strings
         formatted_competitors = []
 
         # Iterate through competitors and their associated sos values
@@ -405,22 +434,82 @@ def daily_reporting_form():
         competitors, competitors_sos
     )
 
-    # -----------------------------------------------------------------------------------------------------
+    # ------------------------DEAL SIZE SECTION---------------------------------------------------------------------------
 
-    deal_size = st.number_input(
-        label="Deal Size(LPO) i.e. Number of tins",
-        min_value=0,
-        value=None,
-        step=1,
-        key="deal_size",
-    )
+    with st.expander(
+        "SECTION: DEAL SIZE", icon=":material/shopping_cart:", expanded=True
+    ):
+        # Initialize deal sizes for each product
+        deal_size_a1 = st.number_input(
+            label="Deal Size for A1 (LPO) i.e. Number of tins",
+            min_value=0,
+            value=None,
+            step=1,
+            key="deal_size_a1",
+        )
 
-    competition_updates = st.text_input(
-        label="Competition Remarks (e.g., Out of Stock, Promotion, Pricing Change, etc.)",
-        key="competition_updates",
-    )
+        deal_size_a2 = st.number_input(
+            label="Deal Size for A2 (LPO) i.e. Number of tins",
+            min_value=0,
+            value=None,
+            step=1,
+            key="deal_size_a2",
+        )
 
-    st.markdown("**required*")
+    # ---------------------------MERCHANDISING SECTION---------------------------------------------------------------------------
+    with st.expander(
+        "SECTION: MERCHANDISING", icon=":material/support_agent:", expanded=True
+    ):
+        clean_dusted = st.checkbox("Clean/Dusted products on shelf", key="clean_dusted")
+        no_damaged = st.checkbox("No damaged products on shelf", key="no_damaged")
+        filled_shelf = st.checkbox("Filled up shelf", key="filled_shelf")
+        order_negotiation = st.checkbox(
+            "Order negotiation/Generated", key="order_negotiation"
+        )
+        price_tag = st.checkbox("Price tag in place", key="price_tag")
+        product_received = st.checkbox("Product received", key="prod_recv")
+        onshelf_training = st.checkbox("On-shelf training", key="onshelf_training")
+        goods_returns = st.checkbox("Goods Returns effected", key="goods_returns")
+
+
+        checkedvalue = 0  # Initialize checkedvalue to 0
+
+        # Check if any checkbox is checked and assign 1 to checkedvalue
+        if (
+            clean_dusted
+            or no_damaged
+            or filled_shelf
+            or order_negotiation
+            or price_tag
+            or product_received
+            or onshelf_training
+            or goods_returns
+        ):
+            checkedvalue = 1  # Set checkedvalue to 1 if any checkbox is checked
+
+        clean_dusted = int(clean_dusted)
+        no_damaged = int(no_damaged)
+        filled_shelf = int(filled_shelf)
+        order_negotiation = int(order_negotiation)
+        price_tag = int(price_tag)
+        product_received = int(product_received)
+        onshelf_training = int(onshelf_training)
+        goods_returns = int(goods_returns)
+
+        # if st.button("Submit"):
+        #     checkedvalues = [
+        #         clean_dusted,
+        #         no_damaged,
+        #         filled_shelf,
+        #         order_negotiation,
+        #         price_tag,
+        #         product_received,
+        #         onshelf_training,
+        #         goods_returns,
+        #     ]
+        #     st.write(checkedvalues)
+
+        st.markdown("**required*")
 
     message_placeholder = st.empty()  # Empty container for success or error messages
     spinner_placeholder = st.empty()  # New empty container for spinner
@@ -434,17 +523,7 @@ def daily_reporting_form():
         icon=":material/send_money:",
         use_container_width=True,
     ):
-        if not (
-            selected_agent
-            and selected_address
-            and selected_workplace
-            and selected_client
-            and objective
-            and comments
-            and outcomes
-            and future_objective
-            and appointment
-        ):
+        if not (selected_agent and selected_address and selected_workplace):
             message_placeholder.warning("Ensure all mandatory fields are filled.")
             st.stop()
         else:
@@ -458,7 +537,7 @@ def daily_reporting_form():
                     current_day_val = today_dayOfweek()
 
                     # Convert selected_client list to comma-separated string
-                    competitors_names_str = ", ".join(competitors)
+                    # competitors_names_str = ", ".join(competitors)
 
                     daily_data = pd.DataFrame(
                         [
@@ -473,32 +552,36 @@ def daily_reporting_form():
                                 "Day": current_day_val,
                                 "Address": selected_address,
                                 "Workplace": selected_workplace,
-                                "Client_ID": client_id_data.get(selected_address),
-                                "Prefix": prefix,
-                                "Client_Name": selected_client,
-                                "Task_Objective": objective,
-                                "Comments/Notes": comments,
-                                "Outcome": outcomes,
-                                "Future_Task_Objective": future_objective,
-                                "Next_Appointment": appointment.strftime("%d-%m-%Y"),
-                                "SOS": sos,
+                                "SOS(A1)": sos_a1,
+                                "SOS(A2)": sos_a2,
                                 "Competitors SOS": formatted_competitors_sos,
                                 "SOH": soh,
-                                "Deal Size(LPO)": deal_size,
                                 "Competitors Updates": competition_updates,
+                                "LPO(A1)": deal_size_a1,
+                                "LPO(A2)": deal_size_a2,
+                                "Clean/Dusted": clean_dusted,
+                                "NoDamage": no_damaged,
+                                "ShelfFilled": filled_shelf,
+                                "OrderGen": order_negotiation,
+                                "PriceTag": price_tag,
+                                "ProdRecv": product_received,
+                                "ShelfTrain": onshelf_training,
+                                "GoodsRet": goods_returns,
                             }
                         ]
                     )
 
                     # Append data
                     conn = st.connection("gsheets", type=GSheetsConnection)
-                    existing_daily_data = pd.concat(
-                        [existing_daily_data, daily_data], ignore_index=True
+                    existing_institution_data = pd.concat(
+                        [existing_institution_data, daily_data], ignore_index=True
                     )
-                    conn.update(worksheet="DailyReport", data=existing_daily_data)
+                    conn.update(
+                        worksheet="InstitutionsReport", data=existing_institution_data
+                    )
 
             # Display success
             message_placeholder.success(
-                "Daily Report successfully submitted!",
+                "Institution Report successfully submitted!",
                 icon=":material/thumb_up:",
             )

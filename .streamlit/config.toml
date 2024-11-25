@@ -1,18 +1,23 @@
 [theme]
 base="light"
-primaryColor="#8e00c6"
+primaryColor="#ED0779"
 backgroundColor="#FFFFFF"
-secondaryBackgroundColor="#f0daf2"
+secondaryBackgroundColor="#fadbe6"
 textColor="#000000"
 font="sans serif"
 
 [ui]
 hideTopBar = true
 
+[runner]
+fastReruns = true
+
 [server]
 enableCORS = false
 enableXsrfProtection = false
 runOnSave = false
+headless = true
+enableStaticServing = true
 
 
 [client]
