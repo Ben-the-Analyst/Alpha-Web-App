@@ -244,7 +244,7 @@ if st.session_state["authentication_status"]:
                             "Add Route",
                             help="Click to add route plan",
                             type="primary",
-                            icon=":material/map_search:",
+                            icon=":material/map:",
                             key="add_route_plan_button",
                             use_container_width=True,
                         ):
