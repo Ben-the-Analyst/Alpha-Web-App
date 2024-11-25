@@ -457,59 +457,62 @@ def institution_scorecard_report():
         )
 
     # ---------------------------MERCHANDISING SECTION---------------------------------------------------------------------------
-    with st.expander(
-        "SECTION: MERCHANDISING", icon=":material/support_agent:", expanded=True
-    ):
-        clean_dusted = st.checkbox("Clean/Dusted products on shelf", key="clean_dusted")
-        no_damaged = st.checkbox("No damaged products on shelf", key="no_damaged")
-        filled_shelf = st.checkbox("Filled up shelf", key="filled_shelf")
-        order_negotiation = st.checkbox(
-            "Order negotiation/Generated", key="order_negotiation"
-        )
-        price_tag = st.checkbox("Price tag in place", key="price_tag")
-        product_received = st.checkbox("Product received", key="prod_recv")
-        onshelf_training = st.checkbox("On-shelf training", key="onshelf_training")
-        goods_returns = st.checkbox("Goods Returns effected", key="goods_returns")
-
-
-        checkedvalue = 0  # Initialize checkedvalue to 0
-
-        # Check if any checkbox is checked and assign 1 to checkedvalue
-        if (
-            clean_dusted
-            or no_damaged
-            or filled_shelf
-            or order_negotiation
-            or price_tag
-            or product_received
-            or onshelf_training
-            or goods_returns
+    # Show expander only for users in the "Rhino" territory
+    if selected_territory == "Rhino":
+        with st.expander(
+            "SECTION: MERCHANDISING", icon=":material/support_agent:", expanded=True
         ):
-            checkedvalue = 1  # Set checkedvalue to 1 if any checkbox is checked
+            clean_dusted = st.checkbox(
+                "Clean/Dusted products on shelf", key="clean_dusted"
+            )
+            no_damaged = st.checkbox("No damaged products on shelf", key="no_damaged")
+            filled_shelf = st.checkbox("Filled up shelf", key="filled_shelf")
+            order_negotiation = st.checkbox(
+                "Order negotiation/Generated", key="order_negotiation"
+            )
+            price_tag = st.checkbox("Price tag in place", key="price_tag")
+            product_received = st.checkbox("Product received", key="prod_recv")
+            onshelf_training = st.checkbox("On-shelf training", key="onshelf_training")
+            goods_returns = st.checkbox("Goods Returns effected", key="goods_returns")
 
-        clean_dusted = int(clean_dusted)
-        no_damaged = int(no_damaged)
-        filled_shelf = int(filled_shelf)
-        order_negotiation = int(order_negotiation)
-        price_tag = int(price_tag)
-        product_received = int(product_received)
-        onshelf_training = int(onshelf_training)
-        goods_returns = int(goods_returns)
+            checkedvalue = 0  # Initialize checkedvalue to 0
 
-        # if st.button("Submit"):
-        #     checkedvalues = [
-        #         clean_dusted,
-        #         no_damaged,
-        #         filled_shelf,
-        #         order_negotiation,
-        #         price_tag,
-        #         product_received,
-        #         onshelf_training,
-        #         goods_returns,
-        #     ]
-        #     st.write(checkedvalues)
+            # Check if any checkbox is checked and assign 1 to checkedvalue
+            if (
+                clean_dusted
+                or no_damaged
+                or filled_shelf
+                or order_negotiation
+                or price_tag
+                or product_received
+                or onshelf_training
+                or goods_returns
+            ):
+                checkedvalue = 1  # Set checkedvalue to 1 if any checkbox is checked
 
-        st.markdown("**required*")
+            clean_dusted = int(clean_dusted)
+            no_damaged = int(no_damaged)
+            filled_shelf = int(filled_shelf)
+            order_negotiation = int(order_negotiation)
+            price_tag = int(price_tag)
+            product_received = int(product_received)
+            onshelf_training = int(onshelf_training)
+            goods_returns = int(goods_returns)
+
+            # if st.button("Submit"):
+            #     checkedvalues = [
+            #         clean_dusted,
+            #         no_damaged,
+            #         filled_shelf,
+            #         order_negotiation,
+            #         price_tag,
+            #         product_received,
+            #         onshelf_training,
+            #         goods_returns,
+            #     ]
+            #     st.write(checkedvalues)
+
+    st.markdown("**required*")
 
     message_placeholder = st.empty()  # Empty container for success or error messages
     spinner_placeholder = st.empty()  # New empty container for spinner
