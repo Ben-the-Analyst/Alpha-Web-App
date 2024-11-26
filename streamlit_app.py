@@ -12,6 +12,7 @@ st.set_page_config(
     layout="wide",
 )
 
+
 st.markdown(
     f"""
     <style>
@@ -108,7 +109,7 @@ if st.session_state["authentication_status"]:
     ]
 
     # --- SHARED ON ALL z_AllPages ---------------------------------------------------------------------------------
-    st.logo("assets/images/logo.png", size="large")
+    st.logo("static/logo.png", size="large")
 
     # ---- Display content after login ---------------------------------------------------------------
 
@@ -190,6 +191,10 @@ if st.session_state["authentication_status"]:
     @st.cache_data(ttl=300)
     def load_hcp_clients_data():
         return conn.read(worksheet="ClientsDatabase")
+
+    @st.cache_data(ttl=300)
+    def load_institution_data():
+        return conn.read(worksheet="InstitutionsReport")
 
     @st.cache_data(ttl=300)
     def load_pending_clients_data():
@@ -519,73 +524,157 @@ if st.session_state["authentication_status"]:
                     with dailyFilterCol:
                         filter_section = st.empty()
 
-            # Create empty container for dynamic table
-            daily_table_container = st.empty()
+            with st.expander(
+                "CLIENTS DAILY REPORTING", icon=":material/ballot:", expanded=True
+            ):
+                # Create empty container for dynamic table
+                daily_table_container = st.empty()
 
-            # Load and filter data
-            Daily_data = load_daily_data()
-            display_daily_data = None
+                # Load and filter data
+                Daily_data = load_daily_data()
+                display_daily_data = None
 
-            # Convert Timestamp column to datetime with mixed format and then to ISO format
-            Daily_data["TimeStamp"] = pd.to_datetime(
-                Daily_data["TimeStamp"], errors="coerce", dayfirst=True
-            ).dt.strftime(
-                "%Y-%m-%dT%H:%M:%S"
-            )  # Convert to ISO format
+                # Convert Timestamp column to datetime with mixed format and then to ISO format
+                Daily_data["TimeStamp"] = pd.to_datetime(
+                    Daily_data["TimeStamp"], errors="coerce", dayfirst=True
+                ).dt.strftime(
+                    "%Y-%m-%dT%H:%M:%S"
+                )  # Convert to ISO format
 
-            # Select box for filters
-            filter_selection = filter_section.selectbox(
-                "Filter by",
-                label_visibility="collapsed",
-                options=route_filters,
-                index=0,  # Default is "Current Week"
-                key="daily_filter_selection",
-            )
+                # Select box for filters
+                filter_selection = filter_section.selectbox(
+                    "Filter by",
+                    label_visibility="collapsed",
+                    options=route_filters,
+                    index=0,  # Default is "Current Week"
+                    key="daily_filter_selection",
+                )
 
-            # Check if data exists and process it
-            if Daily_data is not None and not Daily_data.empty:
-                try:
-                    # Filter by territory for non-admin users first
-                    if user_territory != "admin":
-                        if "Territory" in Daily_data.columns:
-                            Daily_data = Daily_data[
-                                Daily_data["Territory"] == user_territory
-                            ]
+                # Check if data exists and process it
+                if Daily_data is not None and not Daily_data.empty:
+                    try:
+                        # Filter by territory for non-admin users first
+                        if user_territory != "admin":
+                            if "Territory" in Daily_data.columns:
+                                Daily_data = Daily_data[
+                                    Daily_data["Territory"] == user_territory
+                                ]
+                            else:
+                                st.error(
+                                    "The 'Territory' column is missing in Daily data."
+                                )
+
+                        # Now apply the selected filter
+                        display_daily_data = apply_filters(Daily_data, filter_selection)
+
+                        # Drop unnecessary columns based on user type
+                        if user_territory != "admin":
+                            display_daily_data = display_daily_data.drop(
+                                columns=["TimeStamp", "Agent_Name", "Territory"]
+                            )
                         else:
-                            st.error("The 'Territory' column is missing in Daily data.")
+                            display_daily_data = display_daily_data.drop(
+                                columns=["Month"]
+                            )
 
-                    # Now apply the selected filter
-                    display_daily_data = apply_filters(Daily_data, filter_selection)
+                    except Exception as e:
+                        st.error(f"Error processing data: {str(e)}")
+                        st.exception(e)
+                        display_daily_data = None
 
-                    # Drop unnecessary columns based on user type
-                    if user_territory != "admin":
-                        display_daily_data = display_daily_data.drop(
-                            columns=["TimeStamp", "Agent_Name", "Territory"]
-                        )
+                # Display data or show empty state
+                with daily_table_container:
+                    if display_daily_data is None or display_daily_data.empty:
+                        _, col, _ = st.columns([1, 3, 1], gap="small")
+                        with col:
+                            # st.image(
+                            #     "assets/images/alert.png",
+                            #     # caption="No data available after applying the selected filter.",
+                            # )
+                            st.markdown(icon_html, unsafe_allow_html=True)
+                            st.error(
+                                "Oops! No data available for the selected filter. Please try a different filter.",
+                                icon=":material/info:",
+                            )
                     else:
-                        display_daily_data = display_daily_data.drop(columns=["Month"])
+                        st.dataframe(display_daily_data, height=600, hide_index=True)
 
-                except Exception as e:
-                    st.error(f"Error processing data: {str(e)}")
-                    st.exception(e)
-                    display_daily_data = None
+                # -----------------INSTITUTION DATA---------------------------------------------------
+            with st.expander(
+                "INSTITUTION SCORECARD", icon=":material/add_home_work:", expanded=True
+            ):
+                filter_institu_selection = st.empty()
+                # Create empty container for dynamic table
+                institution_scorecard_table_container = st.empty()
 
-            # Display data or show empty state
-            with daily_table_container:
-                if display_daily_data is None or display_daily_data.empty:
-                    _, col, _ = st.columns([1, 3, 1], gap="small")
-                    with col:
-                        # st.image(
-                        #     "assets/images/alert.png",
-                        #     # caption="No data available after applying the selected filter.",
-                        # )
-                        st.markdown(icon_html, unsafe_allow_html=True)
-                        st.error(
-                            "Oops! No data available for the selected filter. Please try a different filter.",
-                            icon=":material/info:",
+                # Load and filter data
+                Institution_data = load_institution_data()
+                display_Institution_data = None
+
+                # Select box for filters
+                filter_selection = filter_institu_selection.selectbox(
+                    "Filter by",
+                    # label_visibility="collapsed",
+                    options=route_filters,
+                    index=0,  # Default is "Current Week"
+                    key="filter_institution_selection",
+                )
+
+                # Check if data exists and process it
+                if Institution_data is not None and not Institution_data.empty:
+                    try:
+                        # Filter by territory for non-admin users first
+                        if user_territory != "admin":
+                            if "Territory" in Institution_data.columns:
+                                Institution_data = Institution_data[
+                                    Institution_data["Territory"] == user_territory
+                                ]
+                            else:
+                                st.error(
+                                    "The 'Territory' column is missing in Daily data."
+                                )
+
+                        # Now apply the selected filter
+                        display_Institution_data = apply_filters(
+                            Institution_data, filter_selection
                         )
-                else:
-                    st.dataframe(display_daily_data, height=600, hide_index=True)
+
+                        # Drop unnecessary columns based on user type
+                        if user_territory != "admin":
+                            display_Institution_data = display_Institution_data.drop(
+                                columns=["TimeStamp", "Agent_Name", "Territory"]
+                            )
+                        else:
+                            display_Institution_data = display_Institution_data.drop(
+                                columns=["Month"]
+                            )
+
+                    except Exception as e:
+                        st.error(f"Error processing data: {str(e)}")
+                        st.exception(e)
+                        display_Institution_data = None
+
+                # Display data or show empty state
+                with institution_scorecard_table_container:
+                    if (
+                        display_Institution_data is None
+                        or display_Institution_data.empty
+                    ):
+                        _, col, _ = st.columns([1, 3, 1], gap="small")
+                        with col:
+                            # st.image(
+                            #     "assets/images/alert.png",
+                            #     # caption="No data available after applying the selected filter.",
+                            # )
+                            st.markdown(icon_html, unsafe_allow_html=True)
+                            st.error(
+                                "Oops! No data available for the selected filter. Please try a different filter.",
+                                icon=":material/info:",
+                            )
+                    else:
+                        st.dataframe(
+                            display_Institution_data, height=600, hide_index=True
+                        )
 
         # --------------------HCP / RETAILERS TAB----------------------------------------------------------------
         with tab[2]:
@@ -775,6 +864,17 @@ if st.session_state["authentication_status"]:
                                 del st.session_state[key]
                         st.write("You have logged out successfully.")
 
+        now = pd.Timestamp.now()
+        current_year = now.year
+        # Add the copyright line dynamically
+        st.markdown(
+            f"""
+             <div style="margin-left: 20px;">
+            &copy; {current_year} Alpha Plus Group. &nbsp;&nbsp;&nbsp; All rights reserved.
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 elif st.session_state["authentication_status"] is False:
     with col2:
         st.error("Username/password is incorrect")

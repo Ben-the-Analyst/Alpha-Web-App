@@ -34,11 +34,11 @@
     padding-bottom: 20px;
 }
 
-.st-key-divider_logout {
-    padding-top: 50px;
+/* .st-key-divider_logout {
+    padding-top: 0px;
     margin-bottom: 0px !important;
     padding-bottom: 0px !important;
-}
+} */
 
 .st-key-logout_expander {
     max-width: 100px;

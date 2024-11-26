@@ -140,8 +140,8 @@ def clear_form():
     st.session_state["competition_updates"] = ""
     st.session_state["deal_size_a1"] = 0
     st.session_state["deal_size_a2"] = 0
-    st.session_state["clean_dusted"] = 0
-    st.session_state["no_damaged"] = 0
+    st.session_state["clean_dusted"] = False
+    st.session_state["no_damaged"] = False
     st.session_state["filled_shelf"] = False
     st.session_state["order_negotiation"] = False
     st.session_state["price_tag"] = False
@@ -456,6 +456,21 @@ def institution_scorecard_report():
             key="deal_size_a2",
         )
 
+    # Initialize variables with default values
+    # Function to return empty string if the value is False
+    def format_merchandising_value(value):
+        return "" if not value else value
+
+    # Initialize variables with default values
+    clean_dusted = format_merchandising_value(False)
+    no_damaged = format_merchandising_value(False)
+    filled_shelf = format_merchandising_value(False)
+    order_negotiation = format_merchandising_value(False)
+    price_tag = format_merchandising_value(False)
+    product_received = format_merchandising_value(False)
+    onshelf_training = format_merchandising_value(False)
+    goods_returns = format_merchandising_value(False)
+
     # ---------------------------MERCHANDISING SECTION---------------------------------------------------------------------------
     # Show expander only for users in the "Rhino" territory
     if selected_territory == "Rhino":
@@ -475,29 +490,18 @@ def institution_scorecard_report():
             onshelf_training = st.checkbox("On-shelf training", key="onshelf_training")
             goods_returns = st.checkbox("Goods Returns effected", key="goods_returns")
 
-            checkedvalue = 0  # Initialize checkedvalue to 0
+            # Initialize checkedvalue to an empty string
+            checkedvalue = ""
 
-            # Check if any checkbox is checked and assign 1 to checkedvalue
-            if (
-                clean_dusted
-                or no_damaged
-                or filled_shelf
-                or order_negotiation
-                or price_tag
-                or product_received
-                or onshelf_training
-                or goods_returns
-            ):
-                checkedvalue = 1  # Set checkedvalue to 1 if any checkbox is checked
-
-            clean_dusted = int(clean_dusted)
-            no_damaged = int(no_damaged)
-            filled_shelf = int(filled_shelf)
-            order_negotiation = int(order_negotiation)
-            price_tag = int(price_tag)
-            product_received = int(product_received)
-            onshelf_training = int(onshelf_training)
-            goods_returns = int(goods_returns)
+            # Assign "yes" or "" based on the checkbox states
+            clean_dusted = "yes" if clean_dusted else ""
+            no_damaged = "yes" if no_damaged else ""
+            filled_shelf = "yes" if filled_shelf else ""
+            order_negotiation = "yes" if order_negotiation else ""
+            price_tag = "yes" if price_tag else ""
+            product_received = "yes" if product_received else ""
+            onshelf_training = "yes" if onshelf_training else ""
+            goods_returns = "yes" if goods_returns else ""
 
             # if st.button("Submit"):
             #     checkedvalues = [
@@ -542,7 +546,11 @@ def institution_scorecard_report():
                     # Convert selected_client list to comma-separated string
                     # competitors_names_str = ", ".join(competitors)
 
-                    daily_data = pd.DataFrame(
+                    totalLPO = (deal_size_a1 if deal_size_a1 is not None else 0) + (
+                        deal_size_a2 if deal_size_a2 is not None else 0
+                    )
+
+                    institution_data = pd.DataFrame(
                         [
                             {
                                 "TimeStamp": submission_time.strftime(
@@ -562,6 +570,7 @@ def institution_scorecard_report():
                                 "Competitors Updates": competition_updates,
                                 "LPO(A1)": deal_size_a1,
                                 "LPO(A2)": deal_size_a2,
+                                "TotalLPO": totalLPO,
                                 "Clean/Dusted": clean_dusted,
                                 "NoDamage": no_damaged,
                                 "ShelfFilled": filled_shelf,
@@ -577,7 +586,7 @@ def institution_scorecard_report():
                     # Append data
                     conn = st.connection("gsheets", type=GSheetsConnection)
                     existing_institution_data = pd.concat(
-                        [existing_institution_data, daily_data], ignore_index=True
+                        [existing_institution_data, institution_data], ignore_index=True
                     )
                     conn.update(
                         worksheet="InstitutionsReport", data=existing_institution_data
@@ -588,3 +597,6 @@ def institution_scorecard_report():
                 "Institution Report successfully submitted!",
                 icon=":material/thumb_up:",
             )
+            st.cache_data.clear()
+            st.session_state.clear()
+            st.rerun()
