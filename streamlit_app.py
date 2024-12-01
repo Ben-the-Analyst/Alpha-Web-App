@@ -99,11 +99,6 @@ if st.session_state["authentication_status"]:
     from forms.hcpformexistingaddress import hcp_form_existing_address
     from forms.hcpformnewclient import hcp_form_new_client
 
-    # --------------------AUTHENTICATION CHECK---------------------------------------------------------------
-    if not st.session_state.get("authenticated"):
-        st.error("Please login to access this page")
-        st.stop()
-
     # --------------------GET USER SPECIFIC DATA(Signed in user)---------------------------------------------------------------
     username = st.session_state["username"]
     user_credentials = st.session_state["user_credentials"]
