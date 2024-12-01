@@ -684,19 +684,27 @@ if st.session_state["authentication_status"]:
                         # Fetch the user's territory
                         territory = user_territory
                         clientdata = load_daily_data()
+                        clientdata["TimeStamp"] = clientdata["TimeStamp"].str.replace(
+                            "/", "-"
+                        )
+                        clientdata["TimeStamp"] = pd.to_datetime(
+                            clientdata["TimeStamp"],
+                            format="%d-%m-%Y %H:%M:%S",
+                            dayfirst=True,
+                            errors="coerce",
+                        )
                         # Filter the DataFrame based on the user's territory
                         user_data_df = clientdata[
                             clientdata["Territory"].str.strip() == territory
                         ]
 
+                        if user_data_df.empty:
+                            st.warning(f"No data available for territory: {territory}")
+
                         # Calculate metrics for the filtered data
                         current_time = datetime.now()
                         total_reports = len(user_data_df)
                         last_updated = user_data_df["TimeStamp"].max()
-
-                        # Ensure last_updated is a datetime object
-                        if isinstance(last_updated, str):
-                            last_updated = pd.to_datetime(last_updated, errors="coerce")
 
                         # Time since the last update
                         if pd.isna(last_updated) or last_updated is pd.NaT:
