@@ -675,6 +675,66 @@ if st.session_state["authentication_status"]:
                     admin_dashboard()
             if user_role == "User":
                 with dashboard_container.container():
+                    with st.expander(
+                        "Metrics Summary - (based on clients reports)",
+                        icon=":material/bar_chart:",
+                        expanded=True,
+                    ):
+                        st.write(user_territory)
+                        # Fetch the user's territory
+                        territory = user_territory
+                        clientdata = load_daily_data()
+                        # Filter the DataFrame based on the user's territory
+                        user_data_df = clientdata[
+                            clientdata["Territory"].str.strip() == territory
+                        ]
+
+                        # Calculate metrics for the filtered data
+                        current_time = datetime.now()
+                        total_reports = len(user_data_df)
+                        last_updated = user_data_df["TimeStamp"].max()
+
+                        # Ensure last_updated is a datetime object
+                        if isinstance(last_updated, str):
+                            last_updated = pd.to_datetime(last_updated, errors="coerce")
+
+                        # Time since the last update
+                        if pd.isna(last_updated) or last_updated is pd.NaT:
+                            last_updated_str = "N/A"
+                            time_since_last_update = "N/A"
+                        else:
+                            last_updated_str = last_updated.strftime("%d-%m-%Y")
+                            time_ago = (current_time - last_updated).total_seconds()
+                            days_ago = time_ago // (24 * 3600)
+                            hours_ago = (time_ago % (24 * 3600)) // 3600
+                            minutes_ago = (time_ago % 3600) // 60
+                            seconds_ago = time_ago % 60
+                            time_since_last_update = f"{int(days_ago)} Days {int(hours_ago)} hrs {int(minutes_ago)} mins {int(seconds_ago)} secs"
+
+                        # Display metrics in columns
+                        cols = st.columns(3)
+                        with cols[0]:
+                            ui.metric_card(
+                                title="Last Updated",
+                                content=f"""{last_updated_str}""",
+                                description=None,
+                                key="user_metric_card1",
+                            )
+                        with cols[1]:
+                            ui.metric_card(
+                                title="Time of the last update",
+                                content=f"""{time_since_last_update}""",
+                                description=None,
+                                key="user_metric_card2",
+                            )
+                        with cols[2]:
+                            ui.metric_card(
+                                title="Total Reports",
+                                content=f"""{total_reports}""",
+                                description=None,
+                                key="user_metric_card3",
+                            )
+
                     user_dashboard()
 
         # --------------------------------------------------------s------------------------------------------------------------------
