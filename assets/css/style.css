@@ -135,3 +135,22 @@
     background-color: #000;
     border: none;
 }
+
+/* LAST UPDATED METRICS */
+.st-key-luagnt1,
+.st-key-luagnt2,
+.st-key-luagnt3,
+.st-key-luagnt4 {
+    justify-content: center;
+    align-items: center;
+    display: flex;
+}
+
+.st-key-user_dashboard_container {
+    background-color: #fadbe6;
+}
+
+.st-key-Timeseries_charts {
+    border-top: 0px solid #8e00c6;
+    /* border-bottom: none; */
+}

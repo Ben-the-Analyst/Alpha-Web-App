@@ -4,3 +4,4 @@ st_gsheets_connection==0.1.0
 streamlit_authenticator==0.4.1
 streamlit==1.39.0
 streamlit-antd-components
+streamlit-shadcn-ui

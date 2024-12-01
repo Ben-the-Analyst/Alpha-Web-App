@@ -353,40 +353,41 @@ def hcp_form_existing_address():
         key="hcp_adoption_ladder",
     )
 
-    with st.expander("SECTION: REACH", icon=":material/view_cozy:", expanded=True):
-        st.markdown(section_label)
-        six_months_section = st.number_input(
-            label="Number of babies seen in 0 - 6 Months",
-            value=None,
-            step=1,
-            key="hcp_six_months_section",
-        )
+    if selected_territory != "Rhino":
+        with st.expander("SECTION: REACH", icon=":material/view_cozy:", expanded=True):
+            st.markdown(section_label)
+            six_months_section = st.number_input(
+                label="Number of babies seen in 0 - 6 Months",
+                value=None,
+                step=1,
+                key="hcp_six_months_section",
+            )
 
-        one_year_section = st.number_input(
-            label="Number of babies seen in 6 months - 1 Year",
-            value=None,
-            step=1,
-            key="hcp_one_year_section",
-        )
+            one_year_section = st.number_input(
+                label="Number of babies seen in 6 months - 1 Year",
+                value=None,
+                step=1,
+                key="hcp_one_year_section",
+            )
 
-        three_years_section = st.number_input(
-            label="Number of babies seen in 1 - 3 Years",
-            value=None,
-            step=1,
-            key="hcp_three_years_section",
-        )
+            three_years_section = st.number_input(
+                label="Number of babies seen in 1 - 3 Years",
+                value=None,
+                step=1,
+                key="hcp_three_years_section",
+            )
 
-        st.markdown(
-            potentiality_label,
-            unsafe_allow_html=True,
-        )
+            st.markdown(
+                potentiality_label,
+                unsafe_allow_html=True,
+            )
 
-        potentiality = st.selectbox(
-            "Choose Potentiality",
-            options=["High", "Moderate", "Low"],
-            index=None,
-            key="hcp_potentiality",
-        )
+            potentiality = st.selectbox(
+                "Choose Potentiality",
+                options=["High", "Moderate", "Low"],
+                index=None,
+                key="hcp_potentiality",
+            )
 
     level_of_influence = st.selectbox(
         "Level of Influence*",

@@ -104,7 +104,7 @@ if st.session_state["authentication_status"]:
     # )
 
     # --- SHARED ON ALL z_AllPages ---------------------------------------------------------------------------------
-    st.logo("assets/images/logo.png", size="large")
+    st.logo("static/logo.png", size="large")
 
     # ---------SIDEBAR-------------------------------------------------------------------------------------
 
