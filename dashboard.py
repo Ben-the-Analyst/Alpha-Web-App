@@ -26,6 +26,7 @@ if not st.session_state.get("authenticated"):
 username = st.session_state["username"]
 user_credentials = st.session_state["user_credentials"]
 user_territory = user_credentials["Territory_ID"]
+st.write(user_territory)
 
 from data import (
     load_route_data,
