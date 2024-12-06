@@ -115,9 +115,7 @@
     border-radius: 100px;
 }
 
-
 /* Primary Buttons Class 2 */
-
 .st-key-add_daily_institution_Report_form_button button,
 .st-key-add_hcp_form_existing_button button {
     background-color: #8e00c6;
@@ -125,7 +123,6 @@
 }
 
 /* Primary Buttons Class 3*/
-
 .st-key-add_hcp_form_existing_address_button button {
     background-color: green;
     border: none;

@@ -336,6 +336,11 @@ def hcp_form_existing_workplace():
         step=1,
         key="healthcare_provider_adoption_ladder",
     )
+    # Initialize variables with default values
+    six_months_section = None
+    one_year_section = None
+    three_years_section = None
+    potentiality = None
 
     if selected_territory != "Rhino":
         with st.expander("SECTION: REACH", icon=":material/view_cozy:", expanded=True):
