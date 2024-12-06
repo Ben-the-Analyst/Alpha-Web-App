@@ -99,13 +99,19 @@
     border: none;
 }
 
-/* Clear Buttons & Submit Buttons */
+/* Clear Btns & Submit Btns & Reset Btns */
 .st-key-clear_daily_form button,
 .st-key-clear_hcp_form button,
 .st-key-clear_route_planner_form button,
 .st-key-submit_daily_form button,
 .st-key-submit_hcp_form button,
-.st-key-submit_route_planner button {
+.st-key-submit_route_planner button,
+.st-key-refresh_dashboard button,
+.st-key-reset_clntdb_filters button,
+.st-key-reset_userclntdb_filters button,
+.st-key-reset_admnclntdb_filters button,
+.st-key-reset_admnistdb_filters button,
+.st-key-reset_admnlpo_filters button {
     border-radius: 100px;
 }
 
